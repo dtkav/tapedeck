@@ -23,6 +23,7 @@ def proxy(path):
         params=request.args,  # Forward the query parameters
     )
 
+    response_headers = {k: v for k, v in resp.headers.items()}
     request_history.append(
         {
             "timestamp": datetime.utcnow().isoformat() + "Z",  # Append 'Z' to indicate UTC time
@@ -32,7 +33,7 @@ def proxy(path):
             "data": request.data.decode("utf-8"),
             "json": request.get_json(silent=True),
             "status_code": resp.status_code,  # Store the status code in the history
-            "response_headers": {k: v for k, v in resp.headers.items()},  # Store the response headers
+            "response_headers": response_headers,  # Store the response headers using the variable
             "response_body": resp.text,  # Store the response body
         }
     )

@@ -20,7 +20,7 @@ def mock_upstream():
         m.put("http://example.com/test", text="response from PUT /test")
         m.patch("http://example.com/test", text="response from PATCH /test")
         m.delete("http://example.com/test", text="response from DELETE /test")
-        m.post("http://example.com/text-plain", text="response from POST /text-plain")
+        m.post("http://example.com/text-plain", text="response from POST /text-plain", headers={"Content-Type": "text/plain"})
         yield m
 
 def test_proxy_post_request_text_plain(client, mock_upstream):

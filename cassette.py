@@ -51,15 +51,16 @@ class ProxyCLI(Cmd):
         return True
 
 
-import argparse
+import click
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='ProxyCLI command line interface.')
-    parser.add_argument('--repl', action='store_true', help='Drop into the REPL command loop.')
-    args = parser.parse_args()
-
-    if args.repl:
+@click.command()
+@click.option('--repl', is_flag=True, help='Drop into the REPL command loop.')
+def main(repl):
+    if repl:
         ProxyCLI().cmdloop()
     else:
         cli = ProxyCLI()
         cli.do_replay_last(None)
+
+if __name__ == "__main__":
+    main()

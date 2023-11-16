@@ -93,9 +93,24 @@ def cli():
 
 @cli.command()
 def history():
-    """Fetch and display the history of proxied requests."""
-    cli = ProxyCLI()
-    cli.do_history(None)
+    """Fetch and display the history of proxied requests with full HTTP message exchange."""
+    response = requests.get(f"{PROXY_SERVICE_URL}/history")
+    if response.ok:
+        history = response.json()['history']
+        for i, raw_entry in enumerate(history, 1):
+            entry = HistoryEntry(
+                method=raw_entry['method'],
+                path=raw_entry['path'],
+                status_code=raw_entry['status_code'],
+                headers=raw_entry['headers'],
+                data=raw_entry['data'],
+                response_headers=raw_entry['response_headers'],
+                response_body=raw_entry['response_body']
+            )
+            formatted_entry = entry.format_as_http_message()
+            click.echo(f"Request {i}:\n{formatted_entry}\n")
+    else:
+        click.echo("Failed to fetch history\n")
 
 @cli.command()
 def replay():

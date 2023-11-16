@@ -1,5 +1,16 @@
 from flask import Flask, request, jsonify, Response, got_request_exception
 import traceback
+
+# Add a global error handler for unhandled exceptions
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Construct a JSON response with the stack trace
+    response = jsonify({
+        "error": str(e),
+        "traceback": traceback.format_exc()
+    })
+    response.status_code = 500
+    return response
 import requests
 import json  # Import the json module
 from urllib.parse import urljoin

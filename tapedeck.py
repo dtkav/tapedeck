@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify, Response
 import requests
-import json
 from urllib.parse import urljoin
-import threading
 
 from history import HistoryManager
 app = Flask(__name__)

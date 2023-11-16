@@ -20,12 +20,12 @@ def handle_exception(e):
     trace = traceback.format_exc()
     logging.error(f"Unhandled exception: {e}\n{trace}")
     # Construct a JSON response with the stack trace
+    response_headers = {'X-Proxy-Origin': 'proxy'}  # Indicate that the response is from the upstream server
     response = jsonify({
         "error": str(e),
         "traceback": trace
     })
-    response.status_code = 500
-    return response
+    return (response, 500, response_headers)
 
 
 
@@ -138,10 +138,9 @@ def replay():
         # Serialize the replayed response using the HistoryEntry serializer and add custom header
         replayed_entry = HistoryEntry.from_response(replayed_response)
         response_headers = dict(replayed_response.headers)
-        response_headers['X-Proxy-Origin'] = 'upstream'  # Indicate that the response is from the upstream server
         return jsonify(replayed_entry.to_dict()), replayed_response.status_code, response_headers
     else:
-        return jsonify({"error": "Invalid request index"}), 400
+        return (jsonify({"error": "Invalid request index"}), 400, response_headers)
 
 
 import click

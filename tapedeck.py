@@ -107,11 +107,11 @@ def replay():
     if index is not None and index < len(history_manager.get_history()):
         req_to_replay = history_manager.get_history()[index]
         response = requests.request(
-            method=req_to_replay["method"],
-            url=urljoin(app.config["UPSTREAM_URL"], req_to_replay["path"]),
-            headers=req_to_replay["headers"],
-            json=req_to_replay["json"],
-            data=req_to_replay["data"],
+            method=req_to_replay.method,
+            url=urljoin(app.config["UPSTREAM_URL"], req_to_replay.path),
+            headers=req_to_replay.headers,
+            json=json.loads(req_to_replay.data) if req_to_replay.data else None,
+            data=req_to_replay.data,
         )
         return (response.content, response.status_code, response.headers.items())
     else:

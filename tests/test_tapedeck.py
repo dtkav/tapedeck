@@ -111,4 +111,5 @@ def test_proxy_get_with_query_params(client, mock_upstream):
     # Assert the response status code
     assert response.status_code == 200
     # Assert the mock server received the correct query parameters
-    assert mock_upstream.last_request.query == 'param1=value1&param2=value2'
+    from urllib.parse import parse_qs
+    assert parse_qs(mock_upstream.last_request.query) == parse_qs('param1=value1&param2=value2')

@@ -10,7 +10,9 @@ import pytest
 @pytest.fixture
 def mock_upstream():
     with requests_mock.Mocker() as m:
-        m.get("http://example.com/test", additional_matcher=lambda req: ('param1=value1' in req.query and 'param2=value2' in req.query) or req.query == '', text="response from GET /test with or without params")
+        from urllib.parse import parse_qs
+
+        m.get("http://example.com/test", additional_matcher=lambda req: parse_qs(req.query) == parse_qs('param1=value1&param2=value2') or req.query == '', text="response from GET /test with or without params")
         m.post(
             "http://example.com/test",
             json={"response": "from POST /test"},

@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify, Response, got_request_exception
 import traceback
 import logging
 import requests
-import json  # Import the json module
+import json
 from urllib.parse import urljoin
+
+from history import HistoryEntry, HistoryManager  # Correct the import statement
 
 from history import HistoryManager
 

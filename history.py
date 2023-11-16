@@ -49,6 +49,7 @@ class HistoryEntry:
             data=entry_dict['data'],
             response_headers=entry_dict['response_headers'],
             response_body=entry_dict['response_body'],
+            timestamp=entry_dict['timestamp'],  # Pass the timestamp to the constructor
         )
 
     @classmethod

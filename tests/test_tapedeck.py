@@ -10,21 +10,31 @@ import pytest
 def mock_upstream():
     with requests_mock.Mocker() as m:
         m.get("http://example.com/test", text="response from GET /test")
-        m.post("http://example.com/test", json={"response": "from POST /test"}, headers={'Content-Type': 'application/json'})
+        m.post(
+            "http://example.com/test",
+            json={"response": "from POST /test"},
+            headers={"Content-Type": "application/json"},
+        )
+
         # Add more mocked endpoints as needed
         def test_proxy_post_request_text_plain(client, mock_upstream):
             # Mock the POST endpoint with text/plain content type
-            mock_upstream.post("http://example.com/text-plain", text="response from POST /text-plain", headers={'Content-Type': 'text/plain'})
-    
+            mock_upstream.post(
+                "http://example.com/text-plain",
+                text="response from POST /text-plain",
+                headers={"Content-Type": "text/plain"},
+            )
+
             # Send a POST request to the proxy
             headers = {"Content-Type": "text/plain"}
             data = "plain text data"
             response = client.post("/text-plain", headers=headers, data=data)
-    
+
             # Assert the response status code and content type
             assert response.status_code == 200
-            assert response.headers['Content-Type'] == 'text/plain'
-            assert response.data.decode('utf-8') == "response from POST /text-plain"
+            assert response.headers["Content-Type"] == "text/plain"
+            assert response.data.decode("utf-8") == "response from POST /text-plain"
+
         yield m
 
 

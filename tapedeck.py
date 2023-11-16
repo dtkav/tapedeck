@@ -31,8 +31,6 @@ def proxy(path):
     )
     # Ensure the response has the correct content type for JSON responses
     response_headers = dict(resp.headers)
-    if 'Content-Type' not in response_headers or 'application/json' not in response_headers['Content-Type']:
-        response_headers['Content-Type'] = 'application/json'
     return (resp.content, resp.status_code, response_headers)
 
 

@@ -56,6 +56,7 @@ class ProxyCLI(Cmd):
         response = requests.post(
             f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
         )
+        # Always use HistoryEntry to serialize the HTTP message to the screen for upstream responses
         proxy_origin = response.headers.get('X-Proxy-Origin')
         if proxy_origin == 'proxy':
             # If the error is from the proxy server, output the error message directly
@@ -67,7 +68,7 @@ class ProxyCLI(Cmd):
                 error_message = response.content.decode('utf-8', errors='replace')
             self.stdout.write(f"Proxy server error: {error_message}\n")
         else:
-            # If the response is from the upstream server, display it using HistoryEntry
+            # Serialize the response using the HistoryEntry serializer
             replayed_entry = HistoryEntry.from_response(response)
             formatted_entry = replayed_entry.format_as_http_message()
             self.stdout.write(formatted_entry + "\n")

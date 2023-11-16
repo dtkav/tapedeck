@@ -22,7 +22,8 @@ def test_history_command(runner):
             }
             result = runner.invoke(cli, ['history'])
             assert result.exit_code == 0
-            assert '1: GET /test\n' in result.output
+            expected_output = "Request 1:\nGET /test HTTP/1.1\n\n\nHTTP/1.1 200\n\n\n"
+            assert expected_output in result.output
 
 def test_replay_command_success(runner):
     with runner.isolated_filesystem():

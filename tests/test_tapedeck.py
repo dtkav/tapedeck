@@ -16,10 +16,11 @@ def mock_upstream():
             json={"response": "from POST /test"},
             headers={"Content-Type": "application/json"},
         )
-        # Add mock responses for PUT, PATCH, and DELETE
+        # Add mock responses for PUT, PATCH, DELETE, and POST to /text-plain
         m.put("http://example.com/test", text="response from PUT /test")
         m.patch("http://example.com/test", text="response from PATCH /test")
         m.delete("http://example.com/test", text="response from DELETE /test")
+        m.post("http://example.com/text-plain", text="response from POST /text-plain")
         yield m
 
 def test_proxy_post_request_text_plain(client, mock_upstream):

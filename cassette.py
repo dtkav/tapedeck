@@ -103,8 +103,23 @@ def history(unique):
 @cli.command()
 def replay():
     """Replay the last request in the history."""
-    cli = ProxyCLI()
-    cli.do_replay_last(None)
+    response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
+    if response.ok:
+        history = response.json()["history"]
+        if history:
+            last_request_index = len(history) - 1  # Get the index of the last request
+            replay_response = requests.post(
+                f"{PROXY_SERVICE_URL}/__/replay", json={"index": last_request_index}
+            )
+            if replay_response.ok:
+                click.echo("Request replayed successfully")
+            else:
+                error_message = replay_response.json().get("error", "Unknown error")
+                click.echo(f"Failed to replay request: {error_message}")
+        else:
+            click.echo("No requests in history to replay.")
+    else:
+        click.echo("Failed to fetch history")
 
 
 if __name__ == "__main__":

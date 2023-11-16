@@ -12,11 +12,13 @@ class ProxyCLI(Cmd):
         """Fetch and display the history of proxied requests."""
         response = requests.get(f"{PROXY_SERVICE_URL}/history")
         if response.ok:
-            history = response.json()
+            history = response.json()['history']
             for i, entry in enumerate(history, 1):
                 self.stdout.write(f"{i}: {entry['method']} {entry['path']}\n")
+            return 0  # Ensure we return 0 to indicate success
         else:
             self.stdout.write("Failed to fetch history\n")
+            return 1  # Return a non-zero value to indicate failure
 
     def do_replay(self, arg):
         """Replay a request by its index in the history."""

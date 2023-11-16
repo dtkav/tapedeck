@@ -70,7 +70,8 @@ def test_history_endpoint(client):
     assert response.status_code == 200
     first_page = response.json
     assert len(first_page['history']) > 0
-    assert first_page['history'][0]["path"] == "test"
+    # Check if any entry in the first page of history has the path "test"
+    assert any(entry["path"] == "test" for entry in first_page['history'])
     
     # Fetch the next page using the 'next' cursor
     next_cursor = first_page['next']

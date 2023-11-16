@@ -154,8 +154,7 @@ def replay():
 
 if __name__ == "__main__":
     cli()
-# This function should be moved outside of the ProxyCLI class and placed at the module level.
-# Ensure that it is placed above the `replay` command function so that it can be accessed.
+# Moved _replay_request function outside of the ProxyCLI class to fix NameError
 def _replay_request(index):
     """Helper method to replay a request by its index in the history."""
     response = requests.post(

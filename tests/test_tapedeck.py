@@ -18,18 +18,20 @@ def mock_upstream(requests_mock):
         request_body = request_response_pair.get('data') or request_response_pair.get('json')
         response_headers = request_response_pair.get('response_headers', {})
         response_body = request_response_pair.get('response_body')
-
-        # Ensure that the Content-Type header is set for the request if provided
-        if 'Content-Type' in request_headers:
-            requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers, content_type=request_headers['Content-Type'])
-        else:
-            requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
+        requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
         return requests_mock
     return _mock_upstream
 
 
+@pytest.fixture
+def client(mock_upstream):
+    app.config["UPSTREAM_URL"] = "http://example.com"
+    with app.test_client() as client:
+        yield client
+
+
 @pytest.mark.parametrize("mock_upstream", [
-    ({
+    {
         'method': 'POST',
         'path': '/text-plain',
         'status_code': 200,
@@ -37,7 +39,7 @@ def mock_upstream(requests_mock):
         'data': 'plain text data',
         'response_headers': {'Content-Type': 'text/plain'},
         'response_body': 'response from POST /text-plain'
-    },)
+    }
 ], indirect=True)
 def test_proxy_post_request_text_plain(client, mock_upstream):
     # Send a POST request to the proxy with the expected content type
@@ -50,12 +52,6 @@ def test_proxy_post_request_text_plain(client, mock_upstream):
     assert response.headers["Content-Type"] == "text/plain"
     assert response.data.decode("utf-8") == "response from POST /text-plain"
 
-
-@pytest.fixture
-def client(mock_upstream):
-    app.config["UPSTREAM_URL"] = "http://example.com"
-    with app.test_client() as client:
-        yield client
 
 
 def test_proxy_get_request(client):

@@ -95,6 +95,7 @@ def cli():
 def history():
     """Fetch and display the history of proxied requests with full HTTP message exchange."""
     response = requests.get(f"{PROXY_SERVICE_URL}/history")
+    click.echo("history")
     if response.ok:
         history = response.json()['history']
         for i, raw_entry in enumerate(history, 1):
@@ -118,15 +119,6 @@ def replay():
     cli = ProxyCLI()
     cli.do_replay_last(None)
 
-@cli.command()
-@click.option('--repl', is_flag=True, help='Drop into the REPL command loop.')
-def repl(repl):
-    """Drop into the REPL command loop."""
-    if repl:
-        ProxyCLI().cmdloop()
 
 if __name__ == "__main__":
     cli()
-
-if __name__ == "__main__":
-    main()

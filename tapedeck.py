@@ -19,6 +19,7 @@ def proxy(path):
         headers=headers,
         json=request.get_json(silent=True),
         data=request.data,
+        params=request.args,  # Forward the query parameters
     )
     request_history.append(
         {

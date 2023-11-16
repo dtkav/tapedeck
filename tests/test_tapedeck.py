@@ -8,9 +8,8 @@ import pytest
 
 
 @pytest.fixture
-def mock_upstream(requests_mock, request):
-    mock_data = request.param
-    with requests_mock.Mocker() as m:
+def mock_upstream(requests_mock):
+    def _mock_upstream(mock_data):
         method = mock_data.get('method', 'GET').lower()
         path = mock_data.get('path', '/')
         full_url = f"http://example.com{path}"
@@ -18,17 +17,10 @@ def mock_upstream(requests_mock, request):
         headers = mock_data.get('response_headers', {})
         body = mock_data.get('response_body', '')
 
-        if method == 'get':
-            m.get(full_url, text=body, status_code=status, headers=headers)
-        elif method == 'post':
-            m.post(full_url, text=body, status_code=status, headers=headers)
-        elif method == 'put':
-            m.put(full_url, text=body, status_code=status, headers=headers)
-        elif method == 'patch':
-            m.patch(full_url, text=body, status_code=status, headers=headers)
-        elif method == 'delete':
-            m.delete(full_url, text=body, status_code=status, headers=headers)
-        yield m
+        with requests_mock.Mocker() as m:
+            m.request(method, full_url, text=body, status_code=status, headers=headers)
+            yield m
+    return _mock_upstream
 
         m.get("http://example.com/test", additional_matcher=lambda req: parse_qs(req.query) == {'param1': ['value1'], 'param2': ['value2']} or req.query == '', text='{"response": "from GET /test with or without params"}', headers={"Content-Type": "application/json", "Server": "MockServer"})
         m.post(

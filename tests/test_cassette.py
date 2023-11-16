@@ -15,7 +15,15 @@ def test_history_command(runner):
         with patch('requests.get') as mock_get:
             mock_get.return_value.ok = True
             mock_get.return_value.json.return_value = {
-                'history': [{"method": "GET", "path": "/test"}],
+                'history': [{
+                    "method": "GET",
+                    "path": "/test",
+                    "status_code": 200,
+                    "headers": {"Content-Type": "application/json"},
+                    "data": "",
+                    "response_headers": {"Content-Type": "application/json"},
+                    "response_body": "response from GET /test"
+                }],
                 'next': None,
                 'previous': None,
                 'limit': 10

@@ -10,7 +10,7 @@ request_history = []
 @app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def proxy(path):
     global request_history
-    full_url = urljoin(UPSTREAM_URL, path)
+    full_url = urljoin(app.config['UPSTREAM_URL'], path)
     headers = {k: v for k, v in request.headers.items() if k != 'Host'}
     resp = requests.request(
         method=request.method,
@@ -40,7 +40,7 @@ def replay():
         req_to_replay = request_history[index]
         response = requests.request(
             method=req_to_replay['method'],
-            url=urljoin(UPSTREAM_URL, req_to_replay['path']),
+            url=urljoin(app.config['UPSTREAM_URL'], req_to_replay['path']),
             headers=req_to_replay['headers'],
             json=req_to_replay['json'],
             data=req_to_replay['data']
@@ -51,14 +51,11 @@ def replay():
 
 import click
 
-# Remove the UPSTREAM_URL constant as it will be passed as an argument
-
 @click.command()
 @click.argument('upstream_url', required=True)
 def run_server(upstream_url):
     """Start the proxy server with the given UPSTREAM_URL."""
-    global UPSTREAM_URL
-    UPSTREAM_URL = upstream_url
+    app.config['UPSTREAM_URL'] = upstream_url
     app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
 
 if __name__ == '__main__':

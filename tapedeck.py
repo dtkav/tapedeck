@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, got_request_exception
+import traceback
 import requests
 import json  # Import the json module
 from urllib.parse import urljoin

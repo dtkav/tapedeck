@@ -19,9 +19,8 @@ def mock_upstream(requests_mock):
         response_headers = request_response_pair['response_headers']
         response_body = request_response_pair['response_body']
 
-        with requests_mock.Mocker() as m:
-            m.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
-            yield m
+        requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
+        return requests_mock
     return _mock_upstream
 
 

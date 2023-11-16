@@ -5,19 +5,6 @@ from cmd import Cmd
 
 from history import HistoryEntry
 
-class HistoryEntry:
-    # ... (other methods and properties of HistoryEntry)
-
-    def format_as_http_message(self) -> str:
-        request_line = f"{self.method} {self.path} {self.http_version}\n"
-        request_headers = ''.join(f"{k}: {v}\n" for k, v in self.headers.items())
-        request_section = f"{request_line}{request_headers}\n{self.data}\n\n" if self.data else f"{request_line}{request_headers}\n"
-
-        status_line = f"{self.http_version} {self.status_code}\n"
-        response_headers = ''.join(f"{k}: {v}\n" for k, v in self.response_headers.items())
-        response_section = f"{status_line}{response_headers}\n{self.response_body}\n" if self.response_body else f"{status_line}{response_headers}\n"
-
-        return f"{request_section}{response_section}"
 
 PROXY_SERVICE_URL = "http://localhost:5000"
 

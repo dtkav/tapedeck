@@ -25,6 +25,8 @@ def proxy(path):
     response_headers = {k: v for k, v in resp.headers.items()}
     from history import HistoryEntry  # Ensure this import is at the top of the file
 
+    from datetime import datetime  # Ensure this import is at the top of the file
+
     history_entry = HistoryEntry(
         method=request.method,
         path=path,
@@ -33,6 +35,7 @@ def proxy(path):
         data=request.data.decode("utf-8"),
         response_headers=response_headers,
         response_body=resp.text,
+        timestamp=datetime.utcnow(),  # Add the current UTC timestamp
     )
     request_history.append(history_entry)
     save_history_to_file()

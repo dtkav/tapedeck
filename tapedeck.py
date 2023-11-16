@@ -32,6 +32,8 @@ def proxy(path):
             "data": request.data.decode("utf-8"),
             "json": request.get_json(silent=True),
             "status_code": resp.status_code,  # Store the status code in the history
+            "response_headers": {k: v for k, v in resp.headers.items()},  # Store the response headers
+            "response_body": resp.text,  # Store the response body
         }
     )
     # Ensure the response has the correct content type for JSON responses

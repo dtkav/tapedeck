@@ -31,7 +31,7 @@ def mock_upstream(requests_mock):
             headers={"Content-Type": "application/json"},
         )
         # Add mock responses for PUT, PATCH, DELETE, and POST to /text-plain
-        m.put("http://example.com/test", text="response from PUT /test")
+    m.put("http://example.com/test", text="response from PUT /test")
         m.patch("http://example.com/test", text="response from PATCH /test")
         m.delete("http://example.com/test", text="response from DELETE /test")
         m.post("http://example.com/text-plain", text="response from POST /text-plain", headers={"Content-Type": "text/plain"})

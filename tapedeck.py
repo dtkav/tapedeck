@@ -60,7 +60,7 @@ def history():
         start = 0
 
     end = start + limit
-    paginated_history = request_history[start:end]
+    paginated_history = history_manager.get_history()[start:end]
 
     next_cursor = base64.urlsafe_b64encode(str(end).encode('utf-8')).decode('utf-8') if end < len(request_history) else None
     prev_cursor = base64.urlsafe_b64encode(str(start).encode('utf-8')).decode('utf-8') if start > 0 else None

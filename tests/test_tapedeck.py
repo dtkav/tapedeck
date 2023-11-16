@@ -22,12 +22,6 @@ def client(mock_upstream):
         yield client
 
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
-
-
 def test_proxy_get_request(client):
     response = client.get("/test")
     assert response.status_code == 200

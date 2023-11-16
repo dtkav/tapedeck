@@ -19,7 +19,6 @@ from urllib.parse import urljoin
 
 from history import HistoryManager
 
-app = Flask(__name__)
 history_manager = HistoryManager()
 
 

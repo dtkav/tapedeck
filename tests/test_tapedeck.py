@@ -16,11 +16,10 @@ def mock_upstream():
             json={"response": "from POST /test"},
             headers={"Content-Type": "application/json"},
         )
-        m.post(
-            "http://example.com/text-plain",
-            text="response from POST /text-plain",
-            headers={"Content-Type": "text/plain"},
-        )
+        # Add mock responses for PUT, PATCH, and DELETE
+        m.put("http://example.com/test", text="response from PUT /test")
+        m.patch("http://example.com/test", text="response from PATCH /test")
+        m.delete("http://example.com/test", text="response from DELETE /test")
         yield m
 
 def test_proxy_post_request_text_plain(client, mock_upstream):
@@ -64,6 +63,34 @@ def test_history_endpoint(client):
     assert len(history) > 0
     assert history[-1]["path"] == "test"
 
+
+def test_proxy_put_request(client, mock_upstream):
+    # Send a PUT request to the proxy
+    headers = {"Content-Type": "application/json"}
+    data = {"key": "updated value"}
+    response = client.put("/test", headers=headers, data=json.dumps(data))
+
+    # Assert the response status code
+    assert response.status_code == 200
+    # Add additional assertions if the upstream server provides a response body
+
+def test_proxy_patch_request(client, mock_upstream):
+    # Send a PATCH request to the proxy
+    headers = {"Content-Type": "application/json"}
+    data = {"key": "patched value"}
+    response = client.patch("/test", headers=headers, data=json.dumps(data))
+
+    # Assert the response status code
+    assert response.status_code == 200
+    # Add additional assertions if the upstream server provides a response body
+
+def test_proxy_delete_request(client, mock_upstream):
+    # Send a DELETE request to the proxy
+    response = client.delete("/test")
+
+    # Assert the response status code
+    assert response.status_code == 200
+    # Add additional assertions if the upstream server provides a response body
 
 def test_replay_endpoint(client):
     client.get("/test")  # Make a request to add to history

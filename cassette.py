@@ -88,7 +88,17 @@ def history():
     if response.ok:
         history = response.json()['history']
         for i, raw_entry in enumerate(history, 1):
-            entry = HistoryEntry.from_dict(raw_entry)
+            entry = HistoryEntry(
+                method=raw_entry['method'],
+                path=raw_entry['path'],
+                status_code=raw_entry['status_code'],
+                headers=raw_entry['headers'],
+                data=raw_entry['data'],
+                response_headers=raw_entry['response_headers'],
+                response_body=raw_entry['response_body'],
+                timestamp=raw_entry['timestamp'],
+                http_version=raw_entry.get('http_version', 'HTTP/1.1')
+            )
             formatted_entry = entry.format_as_http_message()
             click.echo(f"Request {i}:\n{formatted_entry}\n")
     else:

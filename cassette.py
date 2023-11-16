@@ -78,7 +78,7 @@ def cli():
 def history(unique):
     """Fetch and display the history of proxied requests with full HTTP message exchange."""
     params = {'unique': 'true'} if unique else {}
-    response = requests.get(f"{PROXY_SERVICE_URL}/history", params=params)
+    response = requests.get(f"{PROXY_SERVICE_URL}/__/history", params=params)
     click.echo("history")
     if response.ok:
         history = response.json()["history"]

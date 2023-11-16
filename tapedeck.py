@@ -44,7 +44,7 @@ def proxy(path):
 import base64
 
 
-@app.route("/history", methods=["GET"])
+@app.route("/__/history", methods=["GET"])
 def history():
     before = request.args.get("before")
     after = request.args.get("after")
@@ -97,7 +97,7 @@ def history():
     )
 
 
-@app.route("/replay", methods=["POST"])
+@app.route("/__/replay", methods=["POST"])
 def replay():
     data = request.get_json()
     index = data.get("index")

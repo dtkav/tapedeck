@@ -16,7 +16,7 @@ def mock_upstream():
             headers={"Content-Type": "application/json"},
         )
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def mock_upstream():
     with requests_mock.Mocker() as m:
         m.get("http://example.com/test", text="response from GET /test")
@@ -30,15 +30,9 @@ def mock_upstream():
             text="response from POST /text-plain",
             headers={"Content-Type": "text/plain"},
         )
-        yield
-    # Mock the POST endpoint with text/plain content type
-    with requests_mock.Mocker() as m:
-        m.post(
-        "http://example.com/text-plain",
-        text="response from POST /text-plain",
-        headers={"Content-Type": "text/plain"},
-    )
+        yield m
 
+def test_proxy_post_request_text_plain(client, mock_upstream):
     # Send a POST request to the proxy
     headers = {"Content-Type": "text/plain"}
     data = "plain text data"

@@ -107,14 +107,16 @@ def replay():
     index = data.get("index")
     if index is not None and index < len(history_manager.get_history()):
         req_to_replay = history_manager.get_history()[index]
-        response = requests.request(
+        replayed_response = requests.request(
             method=req_to_replay.method,
-            url=urljoin(app.config["UPSTREAM_URL"], f"__/{req_to_replay.path}"),
+            url=urljoin(app.config["UPSTREAM_URL"], req_to_replay.path),
             headers=req_to_replay.headers,
             json=json.loads(req_to_replay.data) if req_to_replay.data else None,
             data=req_to_replay.data,
         )
-        return (response.content, response.status_code, response.headers.items())
+        # Convert headers to a dictionary
+        replayed_response_headers = {k: v for k, v in replayed_response.headers.items()}
+        return (replayed_response.content, replayed_response.status_code, replayed_response_headers)
     else:
         return jsonify({"error": "Invalid request index"}), 400
 

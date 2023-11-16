@@ -47,7 +47,7 @@ class ProxyCLI(Cmd):
 
     def do_replay_last(self, _):
         """Replay the last request in the history."""
-        response = requests.get(f"{PROXY_SERVICE_URL}/history")
+        response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
         if response.ok:
             history = response.json()["history"]
             if not history:

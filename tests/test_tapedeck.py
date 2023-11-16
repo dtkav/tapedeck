@@ -16,26 +16,23 @@ def mock_upstream():
             headers={"Content-Type": "application/json"},
         )
 
-        # Add more mocked endpoints as needed
-        def test_proxy_post_request_text_plain(client, mock_upstream):
-            # Mock the POST endpoint with text/plain content type
-            mock_upstream.post(
-                "http://example.com/text-plain",
-                text="response from POST /text-plain",
-                headers={"Content-Type": "text/plain"},
-            )
+def test_proxy_post_request_text_plain(client, mock_upstream):
+    # Mock the POST endpoint with text/plain content type
+    mock_upstream.post(
+        "http://example.com/text-plain",
+        text="response from POST /text-plain",
+        headers={"Content-Type": "text/plain"},
+    )
 
-            # Send a POST request to the proxy
-            headers = {"Content-Type": "text/plain"}
-            data = "plain text data"
-            response = client.post("/text-plain", headers=headers, data=data)
+    # Send a POST request to the proxy
+    headers = {"Content-Type": "text/plain"}
+    data = "plain text data"
+    response = client.post("/text-plain", headers=headers, data=data)
 
-            # Assert the response status code and content type
-            assert response.status_code == 200
-            assert response.headers["Content-Type"] == "text/plain"
-            assert response.data.decode("utf-8") == "response from POST /text-plain"
-
-        yield m
+    # Assert the response status code and content type
+    assert response.status_code == 200
+    assert response.headers["Content-Type"] == "text/plain"
+    assert response.data.decode("utf-8") == "response from POST /text-plain"
 
 
 @pytest.fixture

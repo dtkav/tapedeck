@@ -87,13 +87,25 @@ def test_proxy_patch_request(client, mock_upstream):
     assert response.status_code == 200
     # Add additional assertions if the upstream server provides a response body
 
-def test_proxy_delete_request(client, mock_upstream):
-    # Send a DELETE request to the proxy
-    response = client.delete("/test")
+def test_proxy_header_preservation(client, mock_upstream):
+    # Send a request to the proxy with custom headers
+    request_headers = {
+        "Custom-Header": "CustomValue",
+        "Another-Header": "AnotherValue"
+    }
+    response = client.get("/test", headers=request_headers)
 
     # Assert the response status code
     assert response.status_code == 200
-    # Add additional assertions if the upstream server provides a response body
+
+    # Assert that the request headers sent to the upstream server are preserved
+    assert mock_upstream.last_request.headers["Custom-Header"] == "CustomValue"
+    assert mock_upstream.last_request.headers["Another-Header"] == "AnotherValue"
+
+    # Assert that the response headers from the upstream server are preserved
+    # (assuming the mock upstream server is set to return specific headers)
+    assert response.headers.get("Content-Type") == "application/json"
+    assert response.headers.get("Server") == "MockServer"  # Example header
 
 def test_replay_endpoint(client):
     client.get("/test")  # Make a request to add to history

@@ -38,7 +38,7 @@ def proxy(path):
         timestamp=datetime.utcnow(),  # Add the current UTC timestamp
     )
     history_manager.append(history_entry)  # Use the history_manager instance to append the entry
-    save_history_to_file()
+    # Removed the call to save_history_to_file() as it's handled by the HistoryManager's append method
     # Ensure the response has the correct content type for JSON responses
     response_headers = dict(resp.headers)
     return (resp.content, resp.status_code, response_headers)

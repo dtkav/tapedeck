@@ -4,6 +4,7 @@ import json
 from urllib.parse import urljoin
 import threading
 
+from datetime import datetime
 app = Flask(__name__)
 request_history = []
 
@@ -21,7 +22,6 @@ def proxy(path):
         data=request.data,
         params=request.args,  # Forward the query parameters
     )
-from datetime import datetime
 
     request_history.append(
         {

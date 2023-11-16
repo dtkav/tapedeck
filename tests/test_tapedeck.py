@@ -9,16 +9,18 @@ import pytest
 
 @pytest.fixture
 def mock_upstream(requests_mock):
-    def _mock_upstream(mock_data):
-        method = mock_data.get('method', 'GET').lower()
-        path = mock_data.get('path', '/')
+    def _mock_upstream(request_response_pair):
+        method = request_response_pair['method'].lower()
+        path = request_response_pair['path']
         full_url = f"http://example.com{path}"
-        status = mock_data.get('status_code', 200)
-        headers = mock_data.get('response_headers', {})
-        body = mock_data.get('response_body', '')
+        status = request_response_pair['status_code']
+        request_headers = request_response_pair['headers']
+        request_body = request_response_pair.get('data') or request_response_pair.get('json')
+        response_headers = request_response_pair['response_headers']
+        response_body = request_response_pair['response_body']
 
         with requests_mock.Mocker() as m:
-            m.request(method, full_url, text=body, status_code=status, headers=headers)
+            m.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
             yield m
     return _mock_upstream
 

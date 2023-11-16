@@ -53,14 +53,25 @@ class ProxyCLI(Cmd):
 
 import click
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+def replay():
+    """Replay the last request in the history."""
+    cli = ProxyCLI()
+    cli.do_replay_last(None)
+
+@cli.command()
 @click.option('--repl', is_flag=True, help='Drop into the REPL command loop.')
-def main(repl):
+def repl(repl):
+    """Drop into the REPL command loop."""
     if repl:
         ProxyCLI().cmdloop()
-    else:
-        cli = ProxyCLI()
-        cli.do_replay_last(None)
+
+if __name__ == "__main__":
+    cli()
 
 if __name__ == "__main__":
     main()

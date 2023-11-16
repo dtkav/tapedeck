@@ -4,9 +4,9 @@ import json
 from urllib.parse import urljoin
 import threading
 
-from history import save_history_to_file, load_history_from_file, HISTORY_FILE_PATH
+from history import HistoryManager
 app = Flask(__name__)
-request_history = load_history_from_file()
+history_manager = HistoryManager()
 
 
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])

@@ -24,14 +24,27 @@ class HistoryEntry:
 
         return f"{request_section}{response_section}"
 
-HISTORY_FILE_PATH = "request_history.json"
+class HistoryManager:
+    HISTORY_FILE_PATH = "request_history.json"
 
-def save_history_to_file(history):
-    with open(HISTORY_FILE_PATH, 'w') as file:
-        json.dump(history, file, default=str)
+    def __init__(self):
+        self._history = self._load_history_from_file()
 
-def load_history_from_file():
-    if os.path.exists(HISTORY_FILE_PATH):
-        with open(HISTORY_FILE_PATH, 'r') as file:
-            return json.load(file)
-    return []
+    def _load_history_from_file(self):
+        if os.path.exists(self.HISTORY_FILE_PATH):
+            with open(self.HISTORY_FILE_PATH, 'r') as file:
+                history_data = json.load(file)
+                return [HistoryEntry(**entry) for entry in history_data]
+        return []
+
+    def _save_history_to_file(self):
+        with open(self.HISTORY_FILE_PATH, 'w') as file:
+            history_data = [entry.__dict__ for entry in self._history]
+            json.dump(history_data, file, default=str)
+
+    def append(self, entry: HistoryEntry):
+        self._history.append(entry)
+        self._save_history_to_file()
+
+    def get_history(self):
+        return self._history

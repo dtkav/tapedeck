@@ -35,7 +35,7 @@ class ProxyCLI(Cmd):
         try:
             index = int(arg) - 1
             response = requests.post(
-                f"{PROXY_SERVICE_URL}/replay", json={"index": index}
+                f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
             )
             if response.ok:
                 self.stdout.write("Request replayed successfully\n")

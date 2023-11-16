@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, Response, got_request_exception
 import traceback
 
+app = Flask(__name__)
+
 # Add a global error handler for unhandled exceptions
 @app.errorhandler(Exception)
 def handle_exception(e):

@@ -1,17 +1,7 @@
-from dataclasses import dataclass
+from history import HistoryEntry
 import requests
 import click
 from cmd import Cmd
-
-@dataclass
-class HistoryEntry:
-    method: str
-    path: str
-    status_code: int
-    headers: dict
-    data: str
-    response_headers: dict
-    response_body: str
 
     def format_as_http_message(self) -> str:
         request_line = f"{self.method} {self.path} HTTP/1.1\n"

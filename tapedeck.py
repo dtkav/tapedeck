@@ -4,25 +4,9 @@ import json
 from urllib.parse import urljoin
 import threading
 
-import os
-import json
-from datetime import datetime
+from history import save_history_to_file, load_history_from_file, HISTORY_FILE_PATH
 app = Flask(__name__)
-request_history = []
-
-HISTORY_FILE_PATH = "request_history.json"
-
-def save_history_to_file():
-    with open(HISTORY_FILE_PATH, 'w') as file:
-        json.dump(request_history, file, default=str)
-
-def load_history_from_file():
-    if os.path.exists(HISTORY_FILE_PATH):
-        with open(HISTORY_FILE_PATH, 'r') as file:
-            global request_history
-            request_history = json.load(file)
-
-load_history_from_file()
+request_history = load_history_from_file()
 
 
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])

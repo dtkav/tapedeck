@@ -128,9 +128,14 @@ def test_proxy_http_status_storage(client, mock_upstream):
     assert history_response.status_code == 200
     history = history_response.json['history']
 
-    # Check if the status code is stored in the history
+    # Check if the status code, response headers, and response body are stored in the history
     assert 'status_code' in history[0]
     assert history[0]['status_code'] == 200
+    assert 'response_headers' in history[0]
+    assert 'Content-Type' in history[0]['response_headers']
+    assert history[0]['response_headers']['Content-Type'] == 'application/json'
+    assert 'response_body' in history[0]
+    assert 'response from GET /test with or without params' in history[0]['response_body']
 
 def test_proxy_header_preservation(client, mock_upstream):
     # Send a request to the proxy with custom headers

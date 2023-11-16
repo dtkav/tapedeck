@@ -24,30 +24,7 @@ def mock_upstream(requests_mock):
             yield m
     return _mock_upstream
 
-    m.get("http://example.com/test", additional_matcher=lambda req: parse_qs(req.query) == {'param1': ['value1'], 'param2': ['value2']} or req.query == '', text='{"response": "from GET /test with or without params"}', headers={"Content-Type": "application/json", "Server": "MockServer"})
-    m.post(
-            "http://example.com/test",
-            json={"response": "from POST /test"},
-            headers={"Content-Type": "application/json"},
-        )
-        # Add mock responses for PUT, PATCH, DELETE, and POST to /text-plain
-    m.put("http://example.com/test", text="response from PUT /test")
-    m.patch("http://example.com/test", text="response from PATCH /test")
-        m.delete("http://example.com/test", text="response from DELETE /test")
-        m.post("http://example.com/text-plain", text="response from POST /text-plain", headers={"Content-Type": "text/plain"})
-        yield m
 
-@pytest.mark.parametrize("mock_upstream", [
-    ({
-        'method': 'POST',
-        'path': '/text-plain',
-        'status_code': 200,
-        'headers': {'Content-Type': 'text/plain'},
-        'data': 'plain text data',
-        'response_headers': {'Content-Type': 'text/plain'},
-        'response_body': 'response from POST /text-plain'
-    },)
-], indirect=True)
 @pytest.mark.parametrize("mock_upstream", [
     ({
         'method': 'POST',

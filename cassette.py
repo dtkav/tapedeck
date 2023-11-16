@@ -1,6 +1,28 @@
+from dataclasses import dataclass
 import requests
 import click
 from cmd import Cmd
+
+@dataclass
+class HistoryEntry:
+    method: str
+    path: str
+    status_code: int
+    headers: dict
+    data: str
+    response_headers: dict
+    response_body: str
+
+    def format_as_http_message(self) -> str:
+        request_line = f"{self.method} {self.path} HTTP/1.1\n"
+        request_headers = ''.join(f"{k}: {v}\n" for k, v in self.headers.items())
+        request_section = f"{request_line}{request_headers}\n{self.data}\n\n" if self.data else f"{request_line}{request_headers}\n"
+
+        status_line = f"HTTP/1.1 {self.status_code}\n"
+        response_headers = ''.join(f"{k}: {v}\n" for k, v in self.response_headers.items())
+        response_section = f"{status_line}{response_headers}\n{self.response_body}\n" if self.response_body else f"{status_line}{response_headers}\n"
+
+        return f"{request_section}{response_section}"
 
 PROXY_SERVICE_URL = "http://localhost:5000"
 
@@ -13,19 +35,18 @@ class ProxyCLI(Cmd):
         response = requests.get(f"{PROXY_SERVICE_URL}/history")
         if response.ok:
             history = response.json()['history']
-            for i, entry in enumerate(history, 1):
-                self.stdout.write(f"Request {i}:\n")
-                self.stdout.write(f"{entry['method']} {entry['path']} HTTP/1.1\n")
-                for header, value in entry['headers'].items():
-                    self.stdout.write(f"{header}: {value}\n")
-                if entry['data']:
-                    self.stdout.write(f"\n{entry['data']}\n")
-                self.stdout.write(f"\nHTTP/1.1 {entry['status_code']}\n")
-                for header, value in entry['response_headers'].items():
-                    self.stdout.write(f"{header}: {value}\n")
-                if entry['response_body']:
-                    self.stdout.write(f"\n{entry['response_body']}\n")
-                self.stdout.write("\n")
+            for i, raw_entry in enumerate(history, 1):
+                entry = HistoryEntry(
+                    method=raw_entry['method'],
+                    path=raw_entry['path'],
+                    status_code=raw_entry['status_code'],
+                    headers=raw_entry['headers'],
+                    data=raw_entry['data'],
+                    response_headers=raw_entry['response_headers'],
+                    response_body=raw_entry['response_body']
+                )
+                formatted_entry = entry.format_as_http_message()
+                self.stdout.write(f"Request {i}:\n{formatted_entry}\n")
             return 0  # Ensure we return 0 to indicate success
         else:
             self.stdout.write("Failed to fetch history\n")

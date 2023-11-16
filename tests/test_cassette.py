@@ -30,7 +30,14 @@ def test_history_command(runner):
             }
             result = runner.invoke(cli, ['history'])
             assert result.exit_code == 0
-            expected_output = "Request 1:\nGET /test HTTP/1.1\n\n\nHTTP/1.1 200\n\n\n"
+            expected_output = (
+                "Request 1:\n"
+                "GET /test HTTP/1.1\n"
+                "Content-Type: application/json\n\n"
+                "HTTP/1.1 200\n"
+                "Content-Type: application/json\n\n"
+                "response from GET /test\n\n\n"
+            )
             assert expected_output in result.output
 
 def test_replay_command_success(runner):

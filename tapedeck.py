@@ -29,7 +29,11 @@ def proxy(path):
             "json": request.get_json(silent=True),
         }
     )
-    return (resp.content, resp.status_code, resp.headers.items())
+    # Ensure the response has the correct content type for JSON responses
+    response_headers = resp.headers.items()
+    if 'Content-Type' not in response_headers or 'application/json' not in response_headers['Content-Type']:
+        response_headers = [('Content-Type', 'application/json')] + list(response_headers)
+    return (resp.content, resp.status_code, response_headers)
 
 
 @app.route("/history", methods=["GET"])

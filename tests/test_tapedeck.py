@@ -10,7 +10,7 @@ import pytest
 def mock_upstream():
     with requests_mock.Mocker() as m:
         m.get("http://example.com/test", text="response from GET /test")
-        m.post("http://example.com/test", json={"response": "from POST /test"})
+        m.post("http://example.com/test", json={"response": "from POST /test"}, headers={'Content-Type': 'application/json'})
         # Add more mocked endpoints as needed
         yield m
 

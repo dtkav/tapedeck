@@ -162,3 +162,26 @@ def replay():
 
 if __name__ == "__main__":
     cli()
+def _replay_request(index):
+    """Helper method to replay a request by its index in the history."""
+    response = requests.post(
+        f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
+    )
+    proxy_origin = response.headers.get('X-Proxy-Origin')
+    if proxy_origin == 'proxy':
+        # If the error is from the proxy server, output the traceback and error message
+        try:
+            # Attempt to parse the response as JSON to get the error message and traceback
+            error_info = response.json()
+            error_message = error_info.get("error", "Unknown error")
+            traceback_info = error_info.get("traceback", "No traceback available")
+        except ValueError:
+            # If JSON parsing fails, use the raw content as the error message
+            error_message = response.content.decode('utf-8', errors='replace')
+            traceback_info = "Traceback could not be parsed from response."
+        return f"{traceback_info}\n{error_message}\n", False
+    else:
+        # Serialize the response using the HistoryEntry serializer
+        replayed_entry = HistoryEntry.from_response(response)
+        formatted_entry = replayed_entry.format_as_http_message()
+        return formatted_entry, True

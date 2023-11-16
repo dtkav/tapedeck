@@ -24,19 +24,18 @@ def proxy(path):
     )
 
     response_headers = {k: v for k, v in resp.headers.items()}
-    request_history.append(
-        {
-            "timestamp": datetime.utcnow().isoformat() + "Z",  # Append 'Z' to indicate UTC time
-            "method": request.method,
-            "path": path,
-            "headers": headers,
-            "data": request.data.decode("utf-8"),
-            "json": request.get_json(silent=True),
-            "status_code": resp.status_code,  # Store the status code in the history
-            "response_headers": response_headers,  # Store the response headers using the variable
-            "response_body": resp.text,  # Store the response body
-        }
+    from history import HistoryEntry  # Ensure this import is at the top of the file
+
+    history_entry = HistoryEntry(
+        method=request.method,
+        path=path,
+        status_code=resp.status_code,
+        headers=headers,
+        data=request.data.decode("utf-8"),
+        response_headers=response_headers,
+        response_body=resp.text,
     )
+    request_history.append(history_entry)
     save_history_to_file()
     # Ensure the response has the correct content type for JSON responses
     response_headers = dict(resp.headers)

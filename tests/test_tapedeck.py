@@ -14,12 +14,16 @@ def mock_upstream(requests_mock):
         path = request_response_pair['path']
         full_url = f"http://example.com{path}"
         status = request_response_pair['status_code']
-        request_headers = request_response_pair['headers']
+        request_headers = request_response_pair.get('headers', {})
         request_body = request_response_pair.get('data') or request_response_pair.get('json')
-        response_headers = request_response_pair['response_headers']
-        response_body = request_response_pair['response_body']
+        response_headers = request_response_pair.get('response_headers', {})
+        response_body = request_response_pair.get('response_body')
 
-        requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
+        # Ensure that the Content-Type header is set for the request if provided
+        if 'Content-Type' in request_headers:
+            requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers, content_type=request_headers['Content-Type'])
+        else:
+            requests_mock.register_uri(method, full_url, text=response_body, status_code=status, headers=response_headers)
         return requests_mock
     return _mock_upstream
 

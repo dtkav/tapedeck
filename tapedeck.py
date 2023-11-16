@@ -35,16 +35,33 @@ def proxy(path):
     return (resp.content, resp.status_code, response_headers)
 
 
+import base64
+
 @app.route("/history", methods=["GET"])
 def history():
-    start = request.args.get('start', default=0, type=int)
+    before = request.args.get('before')
+    after = request.args.get('after')
     limit = request.args.get('limit', default=10, type=int)
+
+    if before:
+        before_index = int(base64.urlsafe_b64decode(before).decode('utf-8'))
+        start = max(before_index - limit, 0)
+    elif after:
+        after_index = int(base64.urlsafe_b64decode(after).decode('utf-8'))
+        start = after_index + 1
+    else:
+        start = 0
+
     end = start + limit
     paginated_history = request_history[start:end]
-    next_start = end if end < len(request_history) else None
+
+    next_cursor = base64.urlsafe_b64encode(str(end).encode('utf-8')).decode('utf-8') if end < len(request_history) else None
+    prev_cursor = base64.urlsafe_b64encode(str(start).encode('utf-8')).decode('utf-8') if start > 0 else None
+
     return jsonify({
         'history': paginated_history,
-        'next_start': next_start,
+        'next': next_cursor,
+        'previous': prev_cursor,
         'limit': limit
     })
 

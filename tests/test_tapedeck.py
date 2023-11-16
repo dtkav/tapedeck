@@ -58,13 +58,35 @@ def test_proxy_post_request(client):
     assert response.json == expected_response
 
 
+import base64
+
 def test_history_endpoint(client):
-    client.get("/test")  # Make a request to add to history
+    # Make a few requests to add to history
+    for _ in range(15):
+        client.get("/test")
+    
+    # Fetch the first page of history
     response = client.get("/history")
     assert response.status_code == 200
-    history = response.json
-    assert len(history) > 0
-    assert history[-1]["path"] == "test"
+    first_page = response.json
+    assert len(first_page['history']) > 0
+    assert first_page['history'][0]["path"] == "test"
+    
+    # Fetch the next page using the 'next' cursor
+    next_cursor = first_page['next']
+    response = client.get(f"/history?after={next_cursor}")
+    assert response.status_code == 200
+    second_page = response.json
+    assert len(second_page['history']) > 0
+    assert second_page['history'][0]["path"] == "test"
+    
+    # Ensure the 'previous' cursor points to the first page
+    prev_cursor = second_page['previous']
+    response = client.get(f"/history?before={prev_cursor}")
+    assert response.status_code == 200
+    previous_page = response.json
+    assert len(previous_page['history']) > 0
+    assert previous_page['history'][0]["path"] == "test"
 
 
 def test_proxy_put_request(client, mock_upstream):

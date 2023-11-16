@@ -60,6 +60,12 @@ def cli():
     pass
 
 @cli.command()
+def history():
+    """Fetch and display the history of proxied requests."""
+    cli = ProxyCLI()
+    cli.do_history(None)
+
+@cli.command()
 def replay():
     """Replay the last request in the history."""
     cli = ProxyCLI()

@@ -7,6 +7,7 @@ from datetime import datetime
 class HistoryEntry:
     method: str
     path: str
+    http_version: str = "HTTP/1.1"  # Default to HTTP/1.1 if not provided
     status_code: int
     headers: dict
     data: str
@@ -18,6 +19,7 @@ class HistoryEntry:
         return {
             'method': self.method,
             'path': self.path,
+            'http_version': self.http_version,  # Include the http_version in the dictionary
             'status_code': self.status_code,
             'headers': self.headers,
             'data': self.data,
@@ -31,6 +33,7 @@ class HistoryEntry:
         return cls(
             method=entry_dict['method'],
             path=entry_dict['path'],
+            http_version=entry_dict.get('http_version', 'HTTP/1.1'),  # Get the http_version from the dictionary, default to HTTP/1.1
             status_code=entry_dict['status_code'],
             headers=entry_dict['headers'],
             data=entry_dict['data'],
@@ -65,11 +68,11 @@ class HistoryEntry:
         )
 
     def format_as_http_message(self) -> str:
-        request_line = f"{self.method} {self.path} HTTP/1.1\n"
+        request_line = f"{self.method} {self.path} {self.http_version}\n"
         request_headers = ''.join(f"{k}: {v}\n" for k, v in self.headers.items())
         request_section = f"{request_line}{request_headers}\n{self.data}\n\n" if self.data else f"{request_line}{request_headers}\n"
 
-        status_line = f"HTTP/1.1 {self.status_code}\n"
+        status_line = f"{self.http_version} {self.status_code}\n"
         response_headers = ''.join(f"{k}: {v}\n" for k, v in self.response_headers.items())
         response_section = f"{status_line}{response_headers}\n{self.response_body}\n" if self.response_body else f"{status_line}{response_headers}\n"
 

@@ -23,16 +23,16 @@ def proxy(path):
     )
 from datetime import datetime
 
-    request_history.append(
-        {
-            "timestamp": datetime.utcnow().isoformat() + "Z",  # Append 'Z' to indicate UTC time
-            "method": request.method,
-            "path": path,
-            "headers": headers,
-            "data": request.data.decode("utf-8"),
-            "json": request.get_json(silent=True),
-        }
-    )
+request_history.append(
+    {
+        "timestamp": datetime.utcnow().isoformat() + "Z",  # Append 'Z' to indicate UTC time
+        "method": request.method,
+        "path": path,
+        "headers": headers,
+        "data": request.data.decode("utf-8"),
+        "json": request.get_json(silent=True),
+    }
+)
     # Ensure the response has the correct content type for JSON responses
     response_headers = dict(resp.headers)
     return (resp.content, resp.status_code, response_headers)

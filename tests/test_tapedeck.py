@@ -100,3 +100,13 @@ def test_replay_endpoint(client):
     last_index = len(history) - 1
     replay_response = client.post("/replay", json={"index": last_index})
     assert replay_response.status_code == 200
+
+def test_proxy_get_with_query_params(client, mock_upstream):
+    # Send a GET request with query parameters to the proxy
+    query_params = {'param1': 'value1', 'param2': 'value2'}
+    response = client.get("/test", query_string=query_params)
+
+    # Assert the response status code
+    assert response.status_code == 200
+    # Assert the mock server received the correct query parameters
+    assert mock_upstream.last_request.query == 'param1=value1&param2=value2'

@@ -38,11 +38,11 @@ class ProxyCLI(Cmd):
         response = requests.get(f"{PROXY_SERVICE_URL}/history")
         if response.ok:
             history = response.json()['history']
-            if history:
-                last_request_index = len(history) - 1
-                self.do_replay(str(last_request_index + 1))  # Adding 1 because the index displayed to the user is 1-based
-            else:
+            if not history:
                 self.stdout.write("No requests in history to replay.\n")
+                return
+            last_request_index = len(history) - 1
+            self.do_replay(str(last_request_index + 1))  # Adding 1 because the index displayed to the user is 1-based
         else:
             self.stdout.write("Failed to fetch history\n")
 

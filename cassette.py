@@ -30,25 +30,42 @@ class ProxyCLI(Cmd):
             self.stdout.write("Failed to fetch history\n")
             return 1  # Return a non-zero value to indicate failure
 
-    def do_replay(self, arg):
-        """Replay a request by its index in the history."""
-        try:
-            index = int(arg)
-            response = requests.post(
-                f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
-            )
+    def do_replay(self, arg=None):
+        """Replay a request by its index in the history, or the last request if no index is provided."""
+        index = None
+        if arg is not None:
+            try:
+                index = int(arg)
+            except ValueError:
+                self.stdout.write("Please provide a valid number or leave blank to replay the last request.\n")
+                return
+
+        if index is None:
+            response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
             if response.ok:
-                self.stdout.write("Request replayed successfully\n")
+                history = response.json()["history"]
+                if history:
+                    index = len(history) - 1  # Get the index of the last request
+                else:
+                    self.stdout.write("No requests in history to replay.\n")
+                    return
             else:
-                try:
-                    # Attempt to parse the response as JSON to get the error message
-                    error_message = response.json().get("error", "Unknown error")
-                except ValueError:
-                    # If JSON parsing fails, use the raw content as the error message
-                    error_message = response.content.decode('utf-8', errors='replace')
-                self.stdout.write(f"Failed to replay request: {error_message}\n")
-        except ValueError:
-            self.stdout.write("Please provide a valid number.\n")
+                self.stdout.write("Failed to fetch history\n")
+                return
+
+        response = requests.post(
+            f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
+        )
+        if response.ok:
+            self.stdout.write("Request replayed successfully\n")
+        else:
+            try:
+                # Attempt to parse the response as JSON to get the error message
+                error_message = response.json().get("error", "Unknown error")
+            except ValueError:
+                # If JSON parsing fails, use the raw content as the error message
+                error_message = response.content.decode('utf-8', errors='replace')
+            self.stdout.write(f"Failed to replay request: {error_message}\n")
 
     def do_replay_last(self, _):
         """Replay the last request in the history."""

@@ -40,7 +40,12 @@ class ProxyCLI(Cmd):
             if response.ok:
                 self.stdout.write("Request replayed successfully\n")
             else:
-                error_message = response.json().get("error", "Unknown error")
+                try:
+                    # Attempt to parse the response as JSON to get the error message
+                    error_message = response.json().get("error", "Unknown error")
+                except ValueError:
+                    # If JSON parsing fails, use the raw content as the error message
+                    error_message = response.content.decode('utf-8', errors='replace')
                 self.stdout.write(f"Failed to replay request: {error_message}\n")
         except ValueError:
             self.stdout.write("Please provide a valid number.\n")

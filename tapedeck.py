@@ -114,9 +114,16 @@ def replay():
             json=json.loads(req_to_replay.data) if req_to_replay.data else None,
             data=req_to_replay.data,
         )
+        # Handle non-JSON responses correctly
+        try:
+            # Attempt to parse the response as JSON
+            response_content = replayed_response.json()
+        except ValueError:
+            # If JSON parsing fails, use the raw content as a fallback
+            response_content = replayed_response.content.decode('utf-8', errors='replace')
         # Convert headers to a dictionary
-        replayed_response_headers = {k: v for k, v in replayed_response.headers.items()}
-        return (replayed_response.content, replayed_response.status_code, replayed_response_headers)
+        replayed_response_headers = dict(replayed_response.headers)
+        return (response_content, replayed_response.status_code, replayed_response_headers)
     else:
         return jsonify({"error": "Invalid request index"}), 400
 

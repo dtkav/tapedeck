@@ -37,8 +37,19 @@ def mock_upstream(requests_mock):
         m.post("http://example.com/text-plain", text="response from POST /text-plain", headers={"Content-Type": "text/plain"})
         yield m
 
+@pytest.mark.parametrize("mock_upstream", [
+    ({
+        'method': 'POST',
+        'path': '/text-plain',
+        'status_code': 200,
+        'headers': {'Content-Type': 'text/plain'},
+        'data': 'plain text data',
+        'response_headers': {'Content-Type': 'text/plain'},
+        'response_body': 'response from POST /text-plain'
+    },)
+], indirect=True)
 def test_proxy_post_request_text_plain(client, mock_upstream):
-    # Send a POST request to the proxy
+    # Send a POST request to the proxy with the expected content type
     headers = {"Content-Type": "text/plain"}
     data = "plain text data"
     response = client.post("/text-plain", headers=headers, data=data)

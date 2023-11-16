@@ -62,8 +62,8 @@ def history():
     end = start + limit
     paginated_history = history_manager.get_history()[start:end]
 
-    next_cursor = base64.urlsafe_b64encode(str(end).encode('utf-8')).decode('utf-8') if end < len(request_history) else None
-    prev_cursor = base64.urlsafe_b64encode(str(start).encode('utf-8')).decode('utf-8') if start > 0 else None
+    next_cursor = base64.urlsafe_b64encode(str(end).encode('utf-8')).decode('utf-8') if end < len(history_manager.get_history()) else None
+    prev_cursor = base64.urlsafe_b64encode(str(start).encode('utf-8')).decode('utf-8') if start > 0 and start < len(history_manager.get_history()) else None
 
     return jsonify({
         'history': paginated_history,
@@ -77,8 +77,8 @@ def history():
 def replay():
     data = request.get_json()
     index = data.get("index")
-    if index is not None and index < len(request_history):
-        req_to_replay = request_history[index]
+    if index is not None and index < len(history_manager.get_history()):
+        req_to_replay = history_manager.get_history()[index]
         response = requests.request(
             method=req_to_replay["method"],
             url=urljoin(app.config["UPSTREAM_URL"], req_to_replay["path"]),

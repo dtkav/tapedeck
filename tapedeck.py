@@ -114,9 +114,11 @@ def replay():
             json=json.loads(req_to_replay.data) if req_to_replay.data else None,
             data=req_to_replay.data,
         )
-        # Serialize the replayed response using the HistoryEntry serializer
+        # Serialize the replayed response using the HistoryEntry serializer and add custom header
         replayed_entry = HistoryEntry.from_response(replayed_response)
-        return jsonify(replayed_entry.to_dict()), replayed_response.status_code, dict(replayed_response.headers)
+        response_headers = dict(replayed_response.headers)
+        response_headers['X-Proxy-Origin'] = 'upstream'  # Indicate that the response is from the upstream server
+        return jsonify(replayed_entry.to_dict()), replayed_response.status_code, response_headers
     else:
         return jsonify({"error": "Invalid request index"}), 400
 

@@ -4,6 +4,7 @@ import pytest
 import click
 from click.testing import CliRunner
 from cassette import cli
+from unittest.mock import patch
 
 @pytest.fixture
 def runner():

@@ -53,6 +53,7 @@ def proxy(path):
             "response_body": resp.text,  # Store the response body
         }
     )
+    save_history_to_file()
     # Ensure the response has the correct content type for JSON responses
     response_headers = dict(resp.headers)
     return (resp.content, resp.status_code, response_headers)

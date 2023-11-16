@@ -56,21 +56,21 @@ class ProxyCLI(Cmd):
         response = requests.post(
             f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
         )
-        if response.ok:
-            self.stdout.write("Request replayed successfully\n")
-        else:
-            proxy_origin = response.headers.get('X-Proxy-Origin')
-            if proxy_origin == 'proxy':
-                error_origin = "Proxy server error"
-            else:
-                error_origin = "Upstream server error"
+        proxy_origin = response.headers.get('X-Proxy-Origin')
+        if proxy_origin == 'proxy':
+            # If the error is from the proxy server, output the error message directly
             try:
                 # Attempt to parse the response as JSON to get the error message
                 error_message = response.json().get("error", "Unknown error")
             except ValueError:
                 # If JSON parsing fails, use the raw content as the error message
                 error_message = response.content.decode('utf-8', errors='replace')
-            self.stdout.write(f"{error_origin}: {error_message}\n")
+            self.stdout.write(f"Proxy server error: {error_message}\n")
+        else:
+            # If the response is from the upstream server, display it using HistoryEntry
+            replayed_entry = HistoryEntry.from_response(response)
+            formatted_entry = replayed_entry.format_as_http_message()
+            self.stdout.write(formatted_entry + "\n")
 
     def do_replay_last(self, _):
         """Replay the last request in the history."""

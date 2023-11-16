@@ -119,7 +119,12 @@ def replay():
             if replay_response.ok:
                 click.echo("Request replayed successfully")
             else:
-                error_message = replay_response.json().get("error", "Unknown error")
+                try:
+                    # Attempt to parse the response as JSON to get the error message
+                    error_message = replay_response.json().get("error", "Unknown error")
+                except ValueError:
+                    # If JSON parsing fails, use the raw content as the error message
+                    error_message = replay_response.content.decode('utf-8', errors='replace')
                 click.echo(f"Failed to replay request: {error_message}")
         else:
             click.echo("No requests in history to replay.")

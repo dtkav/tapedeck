@@ -24,7 +24,7 @@ def mock_upstream(requests_mock):
             yield m
     return _mock_upstream
 
-        m.get("http://example.com/test", additional_matcher=lambda req: parse_qs(req.query) == {'param1': ['value1'], 'param2': ['value2']} or req.query == '', text='{"response": "from GET /test with or without params"}', headers={"Content-Type": "application/json", "Server": "MockServer"})
+    m.get("http://example.com/test", additional_matcher=lambda req: parse_qs(req.query) == {'param1': ['value1'], 'param2': ['value2']} or req.query == '', text='{"response": "from GET /test with or without params"}', headers={"Content-Type": "application/json", "Server": "MockServer"})
         m.post(
             "http://example.com/test",
             json={"response": "from POST /test"},

@@ -21,8 +21,11 @@ def proxy(path):
         data=request.data,
         params=request.args,  # Forward the query parameters
     )
+from datetime import datetime
+
     request_history.append(
         {
+            "timestamp": datetime.utcnow().isoformat() + "Z",  # Append 'Z' to indicate UTC time
             "method": request.method,
             "path": path,
             "headers": headers,

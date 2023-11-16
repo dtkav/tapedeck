@@ -59,14 +59,17 @@ class ProxyCLI(Cmd):
         # Always use HistoryEntry to serialize the HTTP message to the screen for upstream responses
         proxy_origin = response.headers.get('X-Proxy-Origin')
         if proxy_origin == 'proxy':
-            # If the error is from the proxy server, output the error message directly
+            # If the error is from the proxy server, output the traceback and error message
             try:
-                # Attempt to parse the response as JSON to get the error message
-                error_message = response.json().get("error", "Unknown error")
+                # Attempt to parse the response as JSON to get the error message and traceback
+                error_info = response.json()
+                error_message = error_info.get("error", "Unknown error")
+                traceback_info = error_info.get("traceback", "No traceback available")
             except ValueError:
                 # If JSON parsing fails, use the raw content as the error message
                 error_message = response.content.decode('utf-8', errors='replace')
-            self.stdout.write(f"Proxy server error: {error_message}\n")
+                traceback_info = "Traceback could not be parsed from response."
+            self.stdout.write(f"{traceback_info}\nProxy server error: {error_message}\n")
         else:
             # Serialize the response using the HistoryEntry serializer
             replayed_entry = HistoryEntry.from_response(response)

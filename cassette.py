@@ -9,12 +9,23 @@ class ProxyCLI(Cmd):
     prompt = "> "
 
     def do_history(self, _):
-        """Fetch and display the history of proxied requests."""
+        """Fetch and display the history of proxied requests with full HTTP message exchange."""
         response = requests.get(f"{PROXY_SERVICE_URL}/history")
         if response.ok:
             history = response.json()['history']
             for i, entry in enumerate(history, 1):
-                self.stdout.write(f"{i}: {entry['method']} {entry['path']}\n")
+                self.stdout.write(f"Request {i}:\n")
+                self.stdout.write(f"{entry['method']} {entry['path']} HTTP/1.1\n")
+                for header, value in entry['headers'].items():
+                    self.stdout.write(f"{header}: {value}\n")
+                if entry['data']:
+                    self.stdout.write(f"\n{entry['data']}\n")
+                self.stdout.write(f"\nHTTP/1.1 {entry['status_code']}\n")
+                for header, value in entry['response_headers'].items():
+                    self.stdout.write(f"{header}: {value}\n")
+                if entry['response_body']:
+                    self.stdout.write(f"\n{entry['response_body']}\n")
+                self.stdout.write("\n")
             return 0  # Ensure we return 0 to indicate success
         else:
             self.stdout.write("Failed to fetch history\n")

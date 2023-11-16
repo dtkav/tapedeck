@@ -7,12 +7,12 @@ from datetime import datetime
 class HistoryEntry:
     method: str
     path: str
-    http_version: str = "HTTP/1.1"  # Default to HTTP/1.1 if not provided
     status_code: int
     headers: dict
     data: str
     response_headers: dict
     response_body: str
+    http_version: str = "HTTP/1.1"  # Default to HTTP/1.1 if not provided
 
     def to_dict(self):
         """Convert the HistoryEntry instance to a dictionary."""

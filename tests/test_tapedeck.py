@@ -118,6 +118,20 @@ def test_proxy_delete_request(client, mock_upstream):
     assert response.status_code == 200
     # Add additional assertions if the upstream server provides a response body
 
+def test_proxy_http_status_storage(client, mock_upstream):
+    # Send a GET request to the proxy
+    response = client.get("/test")
+    assert response.status_code == 200
+
+    # Fetch the history
+    history_response = client.get("/history")
+    assert history_response.status_code == 200
+    history = history_response.json['history']
+
+    # Check if the status code is stored in the history
+    assert 'status_code' in history[0]
+    assert history[0]['status_code'] == 200
+
 def test_proxy_header_preservation(client, mock_upstream):
     # Send a request to the proxy with custom headers
     request_headers = {

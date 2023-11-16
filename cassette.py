@@ -33,7 +33,7 @@ class ProxyCLI(Cmd):
     def do_replay(self, arg):
         """Replay a request by its index in the history."""
         try:
-            index = int(arg) - 1
+            index = int(arg)
             response = requests.post(
                 f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
             )
@@ -55,7 +55,7 @@ class ProxyCLI(Cmd):
                 return
             last_request_index = len(history) - 1
             self.do_replay(
-                str(last_request_index + 1)
+                str(last_request_index)
             )  # Adding 1 because the index displayed to the user is 1-based
         else:
             self.stdout.write("Failed to fetch history\n")

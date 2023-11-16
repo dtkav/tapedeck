@@ -14,7 +14,7 @@ class ProxyCLI(Cmd):
 
     def do_history(self, _):
         """Fetch and display the history of proxied requests with full HTTP message exchange."""
-        response = requests.get(f"{PROXY_SERVICE_URL}/history")
+        response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
         if response.ok:
             from history import (
                 HistoryEntry,

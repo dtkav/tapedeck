@@ -49,6 +49,7 @@ def history():
     before = request.args.get("before")
     after = request.args.get("after")
     limit = request.args.get("limit", default=10, type=int)
+    unique = request.args.get("unique", default="false").lower() == "true"
 
     if before:
         before_index = int(base64.urlsafe_b64decode(before).decode("utf-8"))
@@ -73,9 +74,22 @@ def history():
         else None
     )
 
+    def unique_entries(entries):
+        seen = set()
+        unique_list = []
+        for entry in entries:
+            entry_signature = (entry.method, entry.path, entry.status_code, json.dumps(entry.headers, sort_keys=True), entry.data, json.dumps(entry.response_headers, sort_keys=True), entry.response_body)
+            if entry_signature not in seen:
+                seen.add(entry_signature)
+                unique_list.append(entry)
+        return unique_list
+
+    if unique:
+        paginated_history = unique_entries(paginated_history)
+
     return jsonify(
         {
-            "history": paginated_history,
+            "history": [entry.to_dict() for entry in paginated_history],
             "next": next_cursor,
             "previous": prev_cursor,
             "limit": limit,

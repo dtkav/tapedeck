@@ -45,15 +45,8 @@ def test_proxy_post_request_text_plain(client, mock_upstream):
 
 
 @pytest.fixture
-def client():
-    with requests_mock.Mocker() as m:
-        m.get("http://example.com/test", text="response from GET /test")
-        m.post(
-            "http://example.com/test",
-            json={"response": "from POST /test"},
-            headers={"Content-Type": "application/json"},
-        )
-        app.config["UPSTREAM_URL"] = "http://example.com"
+def client(mock_upstream):
+    app.config["UPSTREAM_URL"] = "http://example.com"
     with app.test_client() as client:
         yield client
 

@@ -58,32 +58,14 @@ class ProxyCLI(Cmd):
 
     def do_replay(self, arg=None):
         """Replay a request by its index in the history, or the last request if no index is provided."""
-        index = None
-        if arg is not None:
-            try:
-                index = int(arg) - 1  # Adjust for zero-based index
-            except ValueError:
-                self.stdout.write("Please provide a valid number or leave blank to replay the last request.\n")
-                return
+        try:
+            index = int(arg) - 1 if arg is not None else None
+        except ValueError:
+            self.stdout.write("Please provide a valid number or leave blank to replay the last request.\n")
+            return
 
-        if index is None:
-            response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
-            if response.ok:
-                history = response.json()["history"]
-                if history:
-                    index = len(history) - 1  # Get the index of the last request
-                else:
-                    self.stdout.write("No requests in history to replay.\n")
-                    return
-            else:
-                self.stdout.write("Failed to fetch history\n")
-                return
-
-        formatted_entry, success = _replay_request(index)
-        if success:
-            self.stdout.write(formatted_entry + "\n")
-        else:
-            self.stdout.write(formatted_entry)
+        formatted_entry, success = _replay_request(index if index is not None else -1)
+        self.stdout.write(formatted_entry + "\n" if success else formatted_entry)
 
     def do_replay_last(self, _):
         """Replay the last request in the history."""

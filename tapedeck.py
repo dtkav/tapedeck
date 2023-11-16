@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, Response
 import requests
+import json  # Import the json module
 from urllib.parse import urljoin
 
 from history import HistoryManager

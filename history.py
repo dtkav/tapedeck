@@ -29,11 +29,13 @@ class HistoryEntry:
 
     @classmethod
     def from_dict(cls, entry_dict):
-        """Create a HistoryEntry instance from a dictionary."""
+        """Create a HistoryEntry instance from a dictionary, ignoring the 'timestamp' field."""
+        # Remove the 'timestamp' field if it exists in the entry_dict
+        entry_dict.pop('timestamp', None)
         return cls(
             method=entry_dict['method'],
             path=entry_dict['path'],
-            http_version=entry_dict.get('http_version', 'HTTP/1.1'),  # Get the http_version from the dictionary, default to HTTP/1.1
+            http_version=entry_dict.get('http_version', 'HTTP/1.1'),
             status_code=entry_dict['status_code'],
             headers=entry_dict['headers'],
             data=entry_dict['data'],

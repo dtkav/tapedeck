@@ -67,8 +67,10 @@ class HistoryEntry:
         )
 
     @classmethod
-    def from_response(cls, response):
-        """Create a HistoryEntry from a requests response object."""
+    def from_response(cls, response, timestamp=None):
+        """Create a HistoryEntry from a requests response object, with an optional timestamp."""
+        if timestamp is None:
+            timestamp = datetime.utcnow()
         return cls(
             method=response.request.method,
             path=response.request.url,
@@ -77,6 +79,7 @@ class HistoryEntry:
             data=response.request.body or "",
             response_headers=dict(response.headers),
             response_body=response.text,
+            timestamp=timestamp,  # Add the current UTC timestamp if not provided
         )
 
     def format_as_http_message(self) -> str:

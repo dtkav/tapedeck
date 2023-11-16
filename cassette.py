@@ -30,7 +30,8 @@ def _replay_request(index):
         return f"{traceback_info}\n{error_message}\n", False
     else:
         # Serialize the response using the HistoryEntry serializer
-        replayed_entry = HistoryEntry.from_response(response)
+        from datetime import datetime  # Make sure this import is at the top of the file
+        replayed_entry = HistoryEntry.from_response(response, timestamp=datetime.utcnow())
         formatted_entry = replayed_entry.format_as_http_message()
         return formatted_entry, True
 

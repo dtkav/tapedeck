@@ -5,6 +5,7 @@ from datetime import datetime
 
 from datetime import datetime
 
+
 @dataclass
 class HistoryEntry:
     method: str
@@ -20,36 +21,36 @@ class HistoryEntry:
     def to_dict(self):
         """Convert the HistoryEntry instance to a dictionary, including the timestamp."""
         return {
-            'method': self.method,
-            'path': self.path,
-            'http_version': self.http_version,
-            'status_code': self.status_code,
-            'headers': self.headers,
-            'data': self.data,
-            'response_headers': self.response_headers,
-            'response_body': self.response_body,
-            'timestamp': self.timestamp.isoformat(),  # Serialize timestamp to ISO format string
+            "method": self.method,
+            "path": self.path,
+            "http_version": self.http_version,
+            "status_code": self.status_code,
+            "headers": self.headers,
+            "data": self.data,
+            "response_headers": self.response_headers,
+            "response_body": self.response_body,
+            "timestamp": self.timestamp.isoformat(),  # Serialize timestamp to ISO format string
         }
 
     @classmethod
     def from_dict(cls, entry_dict):
         """Create a HistoryEntry instance from a dictionary, including the 'timestamp' field."""
         # Parse the 'timestamp' field from ISO format string to datetime
-        timestamp_str = entry_dict['timestamp']
+        timestamp_str = entry_dict["timestamp"]
         # Replace 'Z' with '+00:00' to indicate UTC timezone
-        if timestamp_str.endswith('Z'):
-            timestamp_str = timestamp_str[:-1] + '+00:00'
-        entry_dict['timestamp'] = datetime.fromisoformat(timestamp_str)
+        if timestamp_str.endswith("Z"):
+            timestamp_str = timestamp_str[:-1] + "+00:00"
+        entry_dict["timestamp"] = datetime.fromisoformat(timestamp_str)
         return cls(
-            method=entry_dict['method'],
-            path=entry_dict['path'],
-            http_version=entry_dict.get('http_version', 'HTTP/1.1'),
-            status_code=entry_dict['status_code'],
-            headers=entry_dict['headers'],
-            data=entry_dict['data'],
-            response_headers=entry_dict['response_headers'],
-            response_body=entry_dict['response_body'],
-            timestamp=entry_dict['timestamp'],  # Pass the timestamp to the constructor
+            method=entry_dict["method"],
+            path=entry_dict["path"],
+            http_version=entry_dict.get("http_version", "HTTP/1.1"),
+            status_code=entry_dict["status_code"],
+            headers=entry_dict["headers"],
+            data=entry_dict["data"],
+            response_headers=entry_dict["response_headers"],
+            response_body=entry_dict["response_body"],
+            timestamp=entry_dict["timestamp"],  # Pass the timestamp to the constructor
         )
 
     @classmethod
@@ -62,7 +63,7 @@ class HistoryEntry:
             headers=dict(request.headers),
             data=request.body or "",
             response_headers=dict(response.headers),
-            response_body=response.text
+            response_body=response.text,
         )
 
     @classmethod
@@ -75,19 +76,30 @@ class HistoryEntry:
             headers=dict(response.request.headers),
             data=response.request.body or "",
             response_headers=dict(response.headers),
-            response_body=response.text
+            response_body=response.text,
         )
 
     def format_as_http_message(self) -> str:
         request_line = f"{self.method} {self.path} {self.http_version}\n"
-        request_headers = ''.join(f"{k}: {v}\n" for k, v in self.headers.items())
-        request_section = f"{request_line}{request_headers}\n{self.data}\n\n" if self.data else f"{request_line}{request_headers}\n"
+        request_headers = "".join(f"{k}: {v}\n" for k, v in self.headers.items())
+        request_section = (
+            f"{request_line}{request_headers}\n{self.data}\n\n"
+            if self.data
+            else f"{request_line}{request_headers}\n"
+        )
 
         status_line = f"{self.http_version} {self.status_code}\n"
-        response_headers = ''.join(f"{k}: {v}\n" for k, v in self.response_headers.items())
-        response_section = f"{status_line}{response_headers}\n{self.response_body}\n" if self.response_body else f"{status_line}{response_headers}\n"
+        response_headers = "".join(
+            f"{k}: {v}\n" for k, v in self.response_headers.items()
+        )
+        response_section = (
+            f"{status_line}{response_headers}\n{self.response_body}\n"
+            if self.response_body
+            else f"{status_line}{response_headers}\n"
+        )
 
         return f"{request_section}{response_section}"
+
 
 class HistoryManager:
     HISTORY_FILE_PATH = "request_history.json"
@@ -98,7 +110,7 @@ class HistoryManager:
     def _load_history_from_file(self):
         """Load history from file, parsing the 'timestamp' field correctly."""
         if os.path.exists(self.HISTORY_FILE_PATH):
-            with open(self.HISTORY_FILE_PATH, 'r') as file:
+            with open(self.HISTORY_FILE_PATH, "r") as file:
                 history_data = json.load(file)
                 # Parse the 'timestamp' field for each entry
                 return [HistoryEntry.from_dict(entry) for entry in history_data]
@@ -106,7 +118,7 @@ class HistoryManager:
 
     def _save_history_to_file(self):
         """Save history to file, converting the 'timestamp' field to a string."""
-        with open(self.HISTORY_FILE_PATH, 'w') as file:
+        with open(self.HISTORY_FILE_PATH, "w") as file:
             # Convert each entry to a dictionary including the 'timestamp' field
             history_data = [entry.to_dict() for entry in self._history]
             json.dump(history_data, file, default=str)

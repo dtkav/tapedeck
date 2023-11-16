@@ -3,6 +3,7 @@ import requests
 from urllib.parse import urljoin
 
 from history import HistoryManager
+
 app = Flask(__name__)
 history_manager = HistoryManager()
 
@@ -42,17 +43,18 @@ def proxy(path):
 
 import base64
 
+
 @app.route("/history", methods=["GET"])
 def history():
-    before = request.args.get('before')
-    after = request.args.get('after')
-    limit = request.args.get('limit', default=10, type=int)
+    before = request.args.get("before")
+    after = request.args.get("after")
+    limit = request.args.get("limit", default=10, type=int)
 
     if before:
-        before_index = int(base64.urlsafe_b64decode(before).decode('utf-8'))
+        before_index = int(base64.urlsafe_b64decode(before).decode("utf-8"))
         start = max(before_index - limit, 0)
     elif after:
-        after_index = int(base64.urlsafe_b64decode(after).decode('utf-8'))
+        after_index = int(base64.urlsafe_b64decode(after).decode("utf-8"))
         start = after_index + 1
     else:
         start = 0
@@ -60,15 +62,25 @@ def history():
     end = start + limit
     paginated_history = history_manager.get_history()[start:end]
 
-    next_cursor = base64.urlsafe_b64encode(str(end).encode('utf-8')).decode('utf-8') if end < len(history_manager.get_history()) else None
-    prev_cursor = base64.urlsafe_b64encode(str(start).encode('utf-8')).decode('utf-8') if start > 0 and start < len(history_manager.get_history()) else None
+    next_cursor = (
+        base64.urlsafe_b64encode(str(end).encode("utf-8")).decode("utf-8")
+        if end < len(history_manager.get_history())
+        else None
+    )
+    prev_cursor = (
+        base64.urlsafe_b64encode(str(start).encode("utf-8")).decode("utf-8")
+        if start > 0 and start < len(history_manager.get_history())
+        else None
+    )
 
-    return jsonify({
-        'history': paginated_history,
-        'next': next_cursor,
-        'previous': prev_cursor,
-        'limit': limit
-    })
+    return jsonify(
+        {
+            "history": paginated_history,
+            "next": next_cursor,
+            "previous": prev_cursor,
+            "limit": limit,
+        }
+    )
 
 
 @app.route("/replay", methods=["POST"])

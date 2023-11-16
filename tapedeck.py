@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify, Response, got_request_exception
 import traceback
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 app = Flask(__name__)
 
 # Add a global error handler for unhandled exceptions
 @app.errorhandler(Exception)
 def handle_exception(e):
+    # Log the exception
+    logging.error(f"Unhandled exception: {e}\n{traceback.format_exc()}")
     # Construct a JSON response with the stack trace
     response = jsonify({
         "error": str(e),

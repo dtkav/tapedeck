@@ -74,9 +74,11 @@ def cli():
 
 
 @cli.command()
-def history():
+@click.option('--unique', is_flag=True, help='Filter history to only include unique requests, excluding the timestamp.')
+def history(unique):
     """Fetch and display the history of proxied requests with full HTTP message exchange."""
-    response = requests.get(f"{PROXY_SERVICE_URL}/history")
+    params = {'unique': 'true'} if unique else {}
+    response = requests.get(f"{PROXY_SERVICE_URL}/history", params=params)
     click.echo("history")
     if response.ok:
         history = response.json()["history"]

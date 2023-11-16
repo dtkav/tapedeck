@@ -14,9 +14,9 @@ class ProxyCLI(Cmd):
         if response.ok:
             history = response.json()
             for i, entry in enumerate(history, 1):
-                print(f"{i}: {entry['method']} {entry['path']}")
+                self.stdout.write(f"{i}: {entry['method']} {entry['path']}\n")
         else:
-            print("Failed to fetch history")
+            self.stdout.write("Failed to fetch history\n")
 
     def do_replay(self, arg):
         """Replay a request by its index in the history."""
@@ -26,11 +26,12 @@ class ProxyCLI(Cmd):
                 f"{PROXY_SERVICE_URL}/replay", json={"index": index}
             )
             if response.ok:
-                print("Request replayed successfully")
+                self.stdout.write("Request replayed successfully\n")
             else:
-                print("Failed to replay request:", response.json().get("error"))
+                error_message = response.json().get("error", "Unknown error")
+                self.stdout.write(f"Failed to replay request: {error_message}\n")
         except ValueError:
-            print("Please provide a valid number.")
+            self.stdout.write("Please provide a valid number.\n")
 
     def do_exit(self, _):
         """Exit the CLI."""

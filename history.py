@@ -35,7 +35,11 @@ class HistoryEntry:
     def from_dict(cls, entry_dict):
         """Create a HistoryEntry instance from a dictionary, including the 'timestamp' field."""
         # Parse the 'timestamp' field from ISO format string to datetime
-        entry_dict['timestamp'] = datetime.fromisoformat(entry_dict['timestamp'])
+        timestamp_str = entry_dict['timestamp']
+        # Replace 'Z' with '+00:00' to indicate UTC timezone
+        if timestamp_str.endswith('Z'):
+            timestamp_str = timestamp_str[:-1] + '+00:00'
+        entry_dict['timestamp'] = datetime.fromisoformat(timestamp_str)
         return cls(
             method=entry_dict['method'],
             path=entry_dict['path'],

@@ -3,6 +3,8 @@ import json
 import os
 from datetime import datetime
 
+from datetime import datetime
+
 @dataclass
 class HistoryEntry:
     method: str
@@ -12,26 +14,28 @@ class HistoryEntry:
     data: str
     response_headers: dict
     response_body: str
+    timestamp: datetime  # Add timestamp field
     http_version: str = "HTTP/1.1"  # Default to HTTP/1.1 if not provided
 
     def to_dict(self):
-        """Convert the HistoryEntry instance to a dictionary."""
+        """Convert the HistoryEntry instance to a dictionary, including the timestamp."""
         return {
             'method': self.method,
             'path': self.path,
-            'http_version': self.http_version,  # Include the http_version in the dictionary
+            'http_version': self.http_version,
             'status_code': self.status_code,
             'headers': self.headers,
             'data': self.data,
             'response_headers': self.response_headers,
             'response_body': self.response_body,
+            'timestamp': self.timestamp.isoformat(),  # Serialize timestamp to ISO format string
         }
 
     @classmethod
     def from_dict(cls, entry_dict):
-        """Create a HistoryEntry instance from a dictionary, ignoring the 'timestamp' field."""
-        # Remove the 'timestamp' field if it exists in the entry_dict
-        entry_dict.pop('timestamp', None)
+        """Create a HistoryEntry instance from a dictionary, including the 'timestamp' field."""
+        # Parse the 'timestamp' field from ISO format string to datetime
+        entry_dict['timestamp'] = datetime.fromisoformat(entry_dict['timestamp'])
         return cls(
             method=entry_dict['method'],
             path=entry_dict['path'],
@@ -87,15 +91,19 @@ class HistoryManager:
         self._history = self._load_history_from_file()
 
     def _load_history_from_file(self):
+        """Load history from file, parsing the 'timestamp' field correctly."""
         if os.path.exists(self.HISTORY_FILE_PATH):
             with open(self.HISTORY_FILE_PATH, 'r') as file:
                 history_data = json.load(file)
-                return [HistoryEntry(**entry) for entry in history_data]
+                # Parse the 'timestamp' field for each entry
+                return [HistoryEntry.from_dict(entry) for entry in history_data]
         return []
 
     def _save_history_to_file(self):
+        """Save history to file, converting the 'timestamp' field to a string."""
         with open(self.HISTORY_FILE_PATH, 'w') as file:
-            history_data = [entry.__dict__ for entry in self._history]
+            # Convert each entry to a dictionary including the 'timestamp' field
+            history_data = [entry.to_dict() for entry in self._history]
             json.dump(history_data, file, default=str)
 
     def append(self, entry: HistoryEntry):

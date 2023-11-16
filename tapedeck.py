@@ -49,7 +49,9 @@ def replay():
     else:
         return jsonify({"error": "Invalid request index"}), 400
 
+# Define UPSTREAM_URL at the module level so it's available to the proxy function
+UPSTREAM_URL = 'http://127.0.0.1:8000'  # Replace with your actual upstream URL
+
 if __name__ == '__main__':
-    UPSTREAM_URL = 'http://127.0.0.1:8000'  # Replace with your actual upstream URL
     app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
 

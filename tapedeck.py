@@ -37,7 +37,16 @@ def proxy(path):
 
 @app.route("/history", methods=["GET"])
 def history():
-    return jsonify(request_history[-10:])  # Return the last 10 requests
+    start = request.args.get('start', default=0, type=int)
+    limit = request.args.get('limit', default=10, type=int)
+    end = start + limit
+    paginated_history = request_history[start:end]
+    next_start = end if end < len(request_history) else None
+    return jsonify({
+        'history': paginated_history,
+        'next_start': next_start,
+        'limit': limit
+    })
 
 
 @app.route("/replay", methods=["POST"])

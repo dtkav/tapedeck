@@ -6,15 +6,6 @@ import requests_mock
 import pytest
 
 
-@pytest.fixture
-def mock_upstream():
-    with requests_mock.Mocker() as m:
-        m.get("http://example.com/test", text="response from GET /test")
-        m.post(
-            "http://example.com/test",
-            json={"response": "from POST /test"},
-            headers={"Content-Type": "application/json"},
-        )
 
 @pytest.fixture
 def mock_upstream():

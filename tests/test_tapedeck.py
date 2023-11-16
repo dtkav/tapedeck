@@ -11,7 +11,7 @@ import pytest
 def mock_upstream():
     with requests_mock.Mocker() as m:
         m.get("http://example.com/test", text="response from GET /test")
-        m.get("http://example.com/test", additional_matcher=lambda req: req.query == 'param1=value1&param2=value2', text="response from GET /test with params")
+        m.get("http://example.com/test", additional_matcher=lambda req: req.query == 'param1=value1&param2=value2', text="response from GET /test with params", complete_qs=True)
         m.post(
             "http://example.com/test",
             json={"response": "from POST /test"},

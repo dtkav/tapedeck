@@ -13,6 +13,32 @@ class HistoryEntry:
     response_headers: dict
     response_body: str
 
+    @classmethod
+    def from_request(cls, request, response):
+        """Create a HistoryEntry from a requests request and response objects."""
+        return cls(
+            method=request.method,
+            path=request.url,
+            status_code=response.status_code,
+            headers=dict(request.headers),
+            data=request.body or "",
+            response_headers=dict(response.headers),
+            response_body=response.text
+        )
+
+    @classmethod
+    def from_response(cls, response):
+        """Create a HistoryEntry from a requests response object."""
+        return cls(
+            method=response.request.method,
+            path=response.request.url,
+            status_code=response.status_code,
+            headers=dict(response.request.headers),
+            data=response.request.body or "",
+            response_headers=dict(response.headers),
+            response_body=response.text
+        )
+
     def format_as_http_message(self) -> str:
         request_line = f"{self.method} {self.path} HTTP/1.1\n"
         request_headers = ''.join(f"{k}: {v}\n" for k, v in self.headers.items())

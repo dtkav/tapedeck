@@ -13,6 +13,31 @@ class HistoryEntry:
     response_headers: dict
     response_body: str
 
+    def to_dict(self):
+        """Convert the HistoryEntry instance to a dictionary."""
+        return {
+            'method': self.method,
+            'path': self.path,
+            'status_code': self.status_code,
+            'headers': self.headers,
+            'data': self.data,
+            'response_headers': self.response_headers,
+            'response_body': self.response_body,
+        }
+
+    @classmethod
+    def from_dict(cls, entry_dict):
+        """Create a HistoryEntry instance from a dictionary."""
+        return cls(
+            method=entry_dict['method'],
+            path=entry_dict['path'],
+            status_code=entry_dict['status_code'],
+            headers=entry_dict['headers'],
+            data=entry_dict['data'],
+            response_headers=entry_dict['response_headers'],
+            response_body=entry_dict['response_body'],
+        )
+
     @classmethod
     def from_request(cls, request, response):
         """Create a HistoryEntry from a requests request and response objects."""

@@ -32,7 +32,8 @@ def test_proxy_post_request(client):
     data = {"key": "value"}
     response = client.post("/test", headers=headers, data=json.dumps(data))
     assert response.status_code == 200
-    assert response.json == data
+    expected_response = {"response": "from POST /test"}
+    assert response.json == expected_response
 
 
 def test_history_endpoint(client):

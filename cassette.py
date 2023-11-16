@@ -33,6 +33,19 @@ class ProxyCLI(Cmd):
         except ValueError:
             self.stdout.write("Please provide a valid number.\n")
 
+    def do_replay_last(self, _):
+        """Replay the last request in the history."""
+        response = requests.get(f"{PROXY_SERVICE_URL}/history")
+        if response.ok:
+            history = response.json()['history']
+            if history:
+                last_request_index = len(history) - 1
+                self.do_replay(str(last_request_index + 1))  # Adding 1 because the index displayed to the user is 1-based
+            else:
+                self.stdout.write("No requests in history to replay.\n")
+        else:
+            self.stdout.write("Failed to fetch history\n")
+
     def do_exit(self, _):
         """Exit the CLI."""
         return True

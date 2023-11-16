@@ -109,7 +109,7 @@ def replay():
         req_to_replay = history_manager.get_history()[index]
         response = requests.request(
             method=req_to_replay.method,
-            url=urljoin(app.config["UPSTREAM_URL"], req_to_replay.path),
+            url=urljoin(app.config["UPSTREAM_URL"], f"__/{req_to_replay.path}"),
             headers=req_to_replay.headers,
             json=json.loads(req_to_replay.data) if req_to_replay.data else None,
             data=req_to_replay.data,

@@ -106,6 +106,7 @@ def history(unique):
         history = response.json()["history"]
         for i, raw_entry in enumerate(history, 1):
             entry = HistoryEntry(
+                id=raw_entry["id"],  # Include the 'id' field when creating the HistoryEntry
                 method=raw_entry["method"],
                 path=raw_entry["path"],
                 status_code=raw_entry["status_code"],

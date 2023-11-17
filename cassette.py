@@ -131,10 +131,7 @@ def replay():
         if history:
             last_request_index = len(history) - 1  # Get the index of the last request
             message, success = _replay_request(last_request_index)
-            if success:
-                click.echo("Request replayed successfully")
-            else:
-                click.echo(f"Failed to replay request: {message}")
+            click.echo(f"{message}")
         else:
             click.echo("No requests in history to replay.")
     else:

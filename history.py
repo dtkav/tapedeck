@@ -8,6 +8,7 @@ from datetime import datetime
 
 @dataclass
 class HistoryEntry:
+    id: str  # Add an ID field
     method: str
     path: str
     status_code: int
@@ -15,12 +16,13 @@ class HistoryEntry:
     data: str
     response_headers: dict
     response_body: str
-    timestamp: datetime  # Add timestamp field
-    http_version: str = "HTTP/1.1"  # Default to HTTP/1.1 if not provided
+    timestamp: datetime
+    http_version: str = "HTTP/1.1"
 
     def to_dict(self):
-        """Convert the HistoryEntry instance to a dictionary, including the timestamp."""
+        """Convert the HistoryEntry instance to a dictionary, including the ID and timestamp."""
         return {
+            "id": self.id,  # Include the ID in the dictionary
             "method": self.method,
             "path": self.path,
             "http_version": self.http_version,
@@ -29,19 +31,21 @@ class HistoryEntry:
             "data": self.data,
             "response_headers": self.response_headers,
             "response_body": self.response_body,
-            "timestamp": self.timestamp.isoformat(),  # Serialize timestamp to ISO format string
+            "timestamp": self.timestamp.isoformat(),
         }
 
     @classmethod
     def from_dict(cls, entry_dict):
-        """Create a HistoryEntry instance from a dictionary, including the 'timestamp' field."""
+        """Create a HistoryEntry instance from a dictionary, including the 'id' and 'timestamp' fields."""
+        # Parse the 'id' field
+        id_str = entry_dict.get("id", None)  # Default to None if 'id' is not provided
         # Parse the 'timestamp' field from ISO format string to datetime
         timestamp_str = entry_dict["timestamp"]
-        # Replace 'Z' with '+00:00' to indicate UTC timezone
         if timestamp_str.endswith("Z"):
             timestamp_str = timestamp_str[:-1] + "+00:00"
         entry_dict["timestamp"] = datetime.fromisoformat(timestamp_str)
         return cls(
+            id=id_str,  # Pass the ID to the constructor
             method=entry_dict["method"],
             path=entry_dict["path"],
             http_version=entry_dict.get("http_version", "HTTP/1.1"),
@@ -50,7 +54,7 @@ class HistoryEntry:
             data=entry_dict["data"],
             response_headers=entry_dict["response_headers"],
             response_body=entry_dict["response_body"],
-            timestamp=entry_dict["timestamp"],  # Pass the timestamp to the constructor
+            timestamp=entry_dict["timestamp"],
         )
 
     @classmethod

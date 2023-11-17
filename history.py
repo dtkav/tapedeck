@@ -66,6 +66,18 @@ class HistoryEntry:
             response_body=response.text,
         )
 
+
+    def update_from_response(self, response):
+        """Update the HistoryEntry instance with a new response from the requests library."""
+        self.status_code = response.status_code
+        self.response_headers = dict(response.headers)
+        self.response_body = response.text
+        if 'timestamp' in response.headers:
+            timestamp_str = response.headers['timestamp']
+            if timestamp_str.endswith("Z"):
+                timestamp_str = timestamp_str[:-1] + "+00:00"
+            self.timestamp = datetime.fromisoformat(timestamp_str)
+
     @classmethod
     def from_response(cls, response, timestamp=None):
         """Create a HistoryEntry from a requests response object, with an optional timestamp."""

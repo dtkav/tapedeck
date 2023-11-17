@@ -127,9 +127,9 @@ def history():
 @app.route("/__/replay", methods=["POST"])
 def replay():
     data = request.get_json()
-    index = data.get("index")
-    if index is not None and index < len(history_manager.get_history()):
-        req_to_replay = history_manager.get_history()[index]
+    entry_id = data.get("id")
+    req_to_replay = next((entry for entry in history_manager.get_history() if entry.id == entry_id), None)
+    if req_to_replay:
         replayed_response = requests.request(
             method=req_to_replay.method,
             url=urljoin(app.config["UPSTREAM_URL"], req_to_replay.path),

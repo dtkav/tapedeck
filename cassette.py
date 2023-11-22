@@ -10,10 +10,10 @@ PROXY_SERVICE_URL = "http://localhost:5000"
 
 
 # Moved _replay_request function outside of the ProxyCLI class to fix NameError
-def _replay_request(index):
+def _replay_request(request_id):
     """Helper method to replay a request by its index in the history."""
     response = requests.post(
-        f"{PROXY_SERVICE_URL}/__/replay", json={"index": index}
+        f"{PROXY_SERVICE_URL}/__/replay", json={"id": request_id}
     )
     proxy_origin = response.headers.get('X-Proxy-Origin')
     if proxy_origin == 'proxy':
@@ -35,59 +35,7 @@ def _replay_request(index):
         formatted_entry = replayed_entry.format_as_http_message()
         return formatted_entry, True
 
-class ProxyCLI(Cmd):
-    prompt = "> "
 
-    def do_history(self, _):
-        """Fetch and display the history of proxied requests with full HTTP message exchange."""
-        response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
-        if response.ok:
-            from history import (
-                HistoryEntry,
-            )  # Ensure this import is at the top of the file
-
-            history_entries = response.json()["history"]
-            for i, entry_dict in enumerate(history_entries, 1):
-                entry = HistoryEntry(**entry_dict)
-                formatted_entry = entry.format_as_http_message()
-                self.stdout.write(f"Request {i}:\n{formatted_entry}\n")
-            return 0  # Ensure we return 0 to indicate success
-        else:
-            self.stdout.write("Failed to fetch history\n")
-            return 1  # Return a non-zero value to indicate failure
-
-    def do_replay(self, arg=None):
-        """Replay a request by its index in the history, or the last request if no index is provided."""
-        try:
-            index = int(arg) - 1 if arg is not None else None
-        except ValueError:
-            self.stdout.write("Please provide a valid number or leave blank to replay the last request.\n")
-            return
-
-        formatted_entry, success = _replay_request(index if index is not None else -1)
-        self.stdout.write(formatted_entry + "\n" if success else formatted_entry)
-
-    def do_replay_last(self, _):
-        """Replay the last request in the history."""
-        response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
-        if response.ok:
-            history = response.json()["history"]
-            if not history:
-                self.stdout.write("No requests in history to replay.\n")
-                return
-            last_request_index = len(history) - 1
-            self.do_replay(
-                str(last_request_index)
-            )  # Adding 1 because the index displayed to the user is 1-based
-        else:
-            self.stdout.write("Failed to fetch history\n")
-
-    def do_exit(self, _):
-        """Exit the CLI."""
-        return True
-
-
-import click
 
 
 @click.group()
@@ -130,8 +78,7 @@ def replay():
     if response.ok:
         history = response.json()["history"]
         if history:
-            last_request_index = len(history) - 1  # Get the index of the last request
-            message, success = _replay_request(last_request_index)
+            message, success = _replay_request(history[-1]["id"])
             click.echo(f"{message}")
         else:
             click.echo("No requests in history to replay.")

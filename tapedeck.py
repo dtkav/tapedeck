@@ -34,7 +34,6 @@ def handle_exception(e):
 
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 def proxy(path):
-    global request_history
     full_url = urljoin(app.config["UPSTREAM_URL"], path)
     headers = {k: v for k, v in request.headers.items() if k != "Host"}
     resp = requests.request(

@@ -8,7 +8,7 @@ from datetime import datetime
 
 @dataclass
 class HistoryEntry:
-    id: str  # Add an ID field
+    id: str
     method: str
     path: str
     status_code: int
@@ -122,7 +122,7 @@ class HistoryEntry:
 
 
 class HistoryManager:
-    HISTORY_FILE_PATH = "request_history.json"
+    HISTORY_FILE_PATH = "tape.json"
 
     def __init__(self):
         self._history = self._load_history_from_file()

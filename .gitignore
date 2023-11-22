@@ -1,4 +1,5 @@
 venv/
+tape.json
 .aider*
 __pycache__/
 dist/

@@ -1,91 +1,159 @@
-from history import HistoryEntry
+from flask import Flask, request, jsonify, Response, got_request_exception
+import traceback
+import logging
 import requests
-import click
-from cmd import Cmd
+import json
+from urllib.parse import urljoin
 
-from history import HistoryEntry
+from history import HistoryEntry, HistoryManager  # Correct the import statement
+
+from history import HistoryManager
 
 
-PROXY_SERVICE_URL = "http://localhost:5000"
+logging.basicConfig(level=logging.ERROR)
+
+app = Flask(__name__)
+history_manager = HistoryManager()
+
+# Add a global error handler for unhandled exceptions
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log the exception
+    trace = traceback.format_exc()
+    logging.error(f"Unhandled exception: {e}\n{trace}")
+    # Construct a JSON response with the stack trace
+    response_headers = {'X-Proxy-Origin': 'proxy'}  # Indicate that the response is from the upstream server
+    response = jsonify({
+        "error": str(e),
+        "traceback": trace
+    })
+    return (response, 500, response_headers)
 
 
-# Moved _replay_request function outside of the ProxyCLI class to fix NameError
-def _replay_request(request_id):
-    """Helper method to replay a request by its index in the history."""
-    response = requests.post(
-        f"{PROXY_SERVICE_URL}/__/replay", json={"id": request_id}
+
+
+@app.route("/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+def proxy(path):
+    full_url = urljoin(app.config["UPSTREAM_URL"], path)
+    headers = {k: v for k, v in request.headers.items() if k != "Host"}
+    resp = requests.request(
+        method=request.method,
+        url=full_url,
+        headers=headers,
+        json=request.get_json(silent=True),
+        data=request.data,
+        params=request.args,  # Forward the query parameters
     )
-    proxy_origin = response.headers.get('X-Proxy-Origin')
-    if proxy_origin == 'proxy':
-        # If the error is from the proxy server, output the traceback and error message
-        try:
-            # Attempt to parse the response as JSON to get the error message and traceback
-            error_info = response.json()
-            error_message = error_info.get("error", "Unknown error")
-            traceback_info = error_info.get("traceback", "No traceback available")
-        except ValueError:
-            # If JSON parsing fails, use the raw content as the error message
-            error_message = response.content.decode('utf-8', errors='replace')
-            traceback_info = "Traceback could not be parsed from response."
-        return f"{traceback_info}\n{error_message}\n", False
+
+    response_headers = {k: v for k, v in resp.headers.items()}
+    from history import HistoryEntry  # Ensure this import is at the top of the file
+
+    from datetime import datetime  # Ensure this import is at the top of the file
+
+    history_entry = HistoryEntry(
+        method=request.method,
+        path=path,
+        status_code=resp.status_code,
+        headers=headers,
+        data=request.data.decode("utf-8"),
+        response_headers=response_headers,
+        response_body=resp.text,
+        timestamp=datetime.utcnow(),  # Add the current UTC timestamp
+    )
+    history_manager.append(history_entry)  # Use the history_manager instance to append the entry
+    # Removed the call to save_history_to_file() as it's handled by the HistoryManager's append method
+    # Ensure the response has the correct content type for JSON responses
+    response_headers = dict(resp.headers)
+    return (resp.content, resp.status_code, response_headers)
+
+
+import base64
+
+
+@app.route("/__/history", methods=["GET"])
+def history():
+    before = request.args.get("before")
+    after = request.args.get("after")
+    limit = request.args.get("limit", default=10, type=int)
+    unique = request.args.get("unique", default="false").lower() == "true"
+
+    if before:
+        before_index = int(base64.urlsafe_b64decode(before).decode("utf-8"))
+        start = max(before_index - limit, 0)
+    elif after:
+        after_index = int(base64.urlsafe_b64decode(after).decode("utf-8"))
+        start = after_index + 1
     else:
-        # Serialize the response using the HistoryEntry serializer
-        from datetime import datetime  # Make sure this import is at the top of the file
-        replayed_entry = HistoryEntry.from_response(response, timestamp=datetime.utcnow())
-        formatted_entry = replayed_entry.format_as_http_message()
-        return formatted_entry, True
+        start = 0
+
+    end = start + limit
+    paginated_history = history_manager.get_history()[start:end]
+
+    next_cursor = (
+        base64.urlsafe_b64encode(str(end).encode("utf-8")).decode("utf-8")
+        if end < len(history_manager.get_history())
+        else None
+    )
+    prev_cursor = (
+        base64.urlsafe_b64encode(str(start).encode("utf-8")).decode("utf-8")
+        if start > 0 and start < len(history_manager.get_history())
+        else None
+    )
+
+    def unique_entries(entries):
+        seen = set()
+        unique_list = []
+        for entry in entries:
+            entry_signature = (entry.method, entry.path, entry.status_code, json.dumps(entry.headers, sort_keys=True), entry.data, json.dumps(entry.response_headers, sort_keys=True), entry.response_body)
+            if entry_signature not in seen:
+                seen.add(entry_signature)
+                unique_list.append(entry)
+        return unique_list
+
+    if unique:
+        paginated_history = unique_entries(paginated_history)
+
+    return jsonify(
+        {
+            "history": [entry.to_dict() for entry in paginated_history],
+            "next": next_cursor,
+            "previous": prev_cursor,
+            "limit": limit,
+        }
+    )
 
 
-
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.option('--unique', is_flag=True, help='Filter history to only include unique requests, excluding the timestamp.')
-def history(unique):
-    """Fetch and display the history of proxied requests with full HTTP message exchange."""
-    params = {'unique': 'true'} if unique else {}
-    response = requests.get(f"{PROXY_SERVICE_URL}/__/history", params=params)
-    click.echo("history")
-    if response.ok:
-        history = response.json()["history"]
-        for i, raw_entry in enumerate(history, 1):
-            entry = HistoryEntry(
-                id=raw_entry["id"],  # Include the 'id' field when creating the HistoryEntry
-                method=raw_entry["method"],
-                path=raw_entry["path"],
-                status_code=raw_entry["status_code"],
-                headers=raw_entry["headers"],
-                data=raw_entry["data"],
-                response_headers=raw_entry["response_headers"],
-                response_body=raw_entry["response_body"],
-                timestamp=raw_entry["timestamp"],
-                http_version=raw_entry.get("http_version", "HTTP/1.1"),
-            )
-            formatted_entry = entry.format_as_http_message()
-            click.echo(f"Request {i}:\n{formatted_entry}\n")
-    else:
-        click.echo("Failed to fetch history\n")
-
-
-@cli.command()
+@app.route("/__/replay", methods=["POST"])
 def replay():
-    """Replay the last request in the history."""
-    response = requests.get(f"{PROXY_SERVICE_URL}/__/history")
-    if response.ok:
-        history = response.json()["history"]
-        if history:
-            message, success = _replay_request(history[-1]["id"])
-            click.echo(f"{message}")
-        else:
-            click.echo("No requests in history to replay.")
+    data = request.get_json()
+    entry_id = data.get("id")
+    req_to_replay = next((entry for entry in history_manager.get_history() if entry.id == entry_id), None)
+    if req_to_replay:
+        replayed_response = requests.request(
+            method=req_to_replay.method,
+            url=urljoin(app.config["UPSTREAM_URL"], req_to_replay.path),
+            headers=req_to_replay.headers,
+            json=json.loads(req_to_replay.data) if req_to_replay.data else None,
+            data=req_to_replay.data,
+        )
+        # Serialize the replayed response using the HistoryEntry serializer and add custom header
+        replayed_entry = HistoryEntry.from_response(replayed_response)
+        response_headers = dict(replayed_response.headers)
+        return jsonify(replayed_entry.to_dict()), replayed_response.status_code, response_headers
     else:
-        click.echo("Failed to fetch history")
+        return (jsonify({"error": "Invalid request index"}), 400, response_headers)
+
+
+import click
+
+
+@click.command()
+@click.argument("upstream_url", required=True)
+def run_server(upstream_url):
+    """Start the proxy server with the given UPSTREAM_URL."""
+    app.config["UPSTREAM_URL"] = upstream_url
+    app.run(host="0.0.0.0", port=54321, debug=True, threaded=True)
 
 
 if __name__ == "__main__":
-    cli()
-
+    run_server()
